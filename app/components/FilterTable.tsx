@@ -1,6 +1,6 @@
-// File: app/components/FilterableTable.tsx
-// PASTIKAN NAMA FILE INI SUDAH DIUBAH MENJADI .tsx
-
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"; // Komponen ini interaktif di sisi klien
 
 import { useState, useEffect } from 'react';

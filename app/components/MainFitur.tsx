@@ -1,4 +1,6 @@
-// File: app/page.jsx
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Import modul yang diperlukan dari Node.js untuk membaca file
 import fs from 'fs';

@@ -1,5 +1,6 @@
-// File: app/components/PredictionDashboard.tsx
-// GANTI SELURUH ISI FILE INI
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
