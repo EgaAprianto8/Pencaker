@@ -1,5 +1,5 @@
-// components/ui/historical-wage-trend-chart.tsx
-// (Direkomendasikan ganti nama menjadi historical-job-demand-chart.tsx)
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -10,6 +10,15 @@ import { format, parseISO } from 'date-fns';
 
 import { sektorJabatanMap } from './sektor-jabatan-map';
 
+interface HistoricalJobDemandChartProps {
+    mainData: DataItem[];
+    allJabatanOptions: string[];
+    selectedSector: string | null;
+    chartTitle?: string;
+    startDateProp?: string;
+    endDateProp?: string;
+    selectedGajiFilter: string | null;
+}
 
 // Tipe Data Utama (sama seperti DataItem di MainFeature.tsx)
 type DataItem = {
@@ -89,7 +98,7 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({ mai
         const startDate = parseISO(startDateProp || '2022-01-01');
         const endDate = parseISO(endDateProp || '2025-06-30');
 
-        mainData.forEach(item => {
+        mainData.forEach((item: { TANGGAL_DAFTAR: any; JABATAN_DIINGINKAN_Normalized: any; UPAH_DIINGINKAN: any; }) => {
             const tanggalDaftarStr = cleanData(item.TANGGAL_DAFTAR);
             const jabatanNormalizedStr = cleanData(item.JABATAN_DIINGINKAN_Normalized);
             const upahDiinginkanItem = cleanData(item.UPAH_DIINGINKAN);

@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   eslint: {
     // Menonaktifkan linting saat build agar tidak menggagalkan deploy
     ignoreDuringBuilds: true,
+    
   },
 };
 
