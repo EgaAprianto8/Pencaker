@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FiSearch, FiChevronLeft, FiChevronRight, FiUser, FiBriefcase, FiMapPin, FiCalendar, FiAward, FiTag, FiRotateCcw, FiChevronsRight } from 'react-icons/fi';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Lightbulb } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList, PieChart, Pie } from 'recharts';
+import { Lightbulb, Users, DollarSign, Male, Female, CalendarDays } from 'lucide-react';
+
+import { sektorJabatanMap, sektorOptions } from './sektor-jabatan-map';
+import HistoricalJobDemandChart from './historical-wage-trend-chart';
 
 // Tipe Data Utama
 type DataItem = {
@@ -31,26 +34,6 @@ type DataItem = {
     keterampilan_cleaned: string;
 };
 
-// ===================================================================================
-// PEMETAAN SEKTOR DAN JABATAN
-// ===================================================================================
-const sektorJabatanMap = [
-    { sektor: "Manajerial", jabatan: ["manajer"] },
-    { sektor: "Profesional, Ilmiah, & Teknis", jabatan: ["tenaga profesional", "teknisi dan asisten profesional", "aktivitas profesional, ilmiah, dan teknis"] },
-    { sektor: "Administrasi & Tata Usaha", jabatan: ["tenaga tata usaha"] },
-    { sektor: "Jasa & Penjualan", jabatan: ["tenaga usaha jasa dan tenaga penjualan", "perdagangan besar dan eceran, reparasi, dan perawatan mobil dan sepeda motor."] },
-    { sektor: "Pertanian, Kehutanan, & Perikanan", jabatan: ["pekerja terampil pertanian, kehutanan, dan perikanan", "pertanian tanaman padi dan palawijaya", "hortikultura", "perkebunan", "perikanan", "peternakan", "kehutanan dan pertanian lainnya"] },
-    { sektor: "Industri & Konstruksi", jabatan: ["pekerja pengolahan, kerajinan, dan yang berhubungan dengan itu", "operator dan perakitan mesin", "industri pengolahan", "konstruksi"] },
-    { sektor: "Pekerja Kasar & Umum", jabatan: ["pekerja kasar"] },
-    { sektor: "Layanan Publik & Sosial", jabatan: ["administrasi pemerintahan, pertahanan, dan jaminan sosial wajib", "pendidikan", "aktivitas kesehatan manusia dan aktivitas sosial", "kesenian, hiburan dan rekreasi", "aktivitas jasa lainnya", "tentara nasional indonesia (tni) dan kepolisian negara republik indonesia (polri)"] },
-    { sektor: "Akomodasi & Transportasi", jabatan: ["pengangkutan dan pergudangan", "penyediaan akomodasi dan penyediaan makan minum"] },
-    { sektor: "Utilitas & Lingkungan", jabatan: ["pengadaan listrik, gas, uap/air panas, dan udara dingin", "pengelolaan air, pengelolaan air limbah, pengelolaan dan daur ulang sampah, aktivitas remediasi"] },
-    { sektor: "Lainnya", jabatan: ["informasi dan komunikasi", "aktivitas keuangan dan asuransi", "real estate", "aktivitas penyewaan dan sewa guna tanpa hak opsi, ketenagakerjaan, agen perjalanan, dan penunjang usaha lainnya", "aktivitas rumah tangga sebagai pemberi kerja", "aktivitas badan internasional dan badan ekstra internasional lainnya", "lain-lain"] }
-];
-
-const sektorOptions = sektorJabatanMap.map(item => item.sektor);
-
-
 // Fungsi Helper
 const cleanData = (value: any): string => {
     if (typeof value !== 'string') return '';
@@ -62,122 +45,276 @@ const capitalizeWords = (str: string): string => {
     return str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 };
 
-// ===================================================================================
-// KOMPONEN VISUALISASI
-// ===================================================================================
-type ProcessedJobData = {
-    jabatan: string;
-    peminat: number;
-    gajiNumerik: number;
-};
-
 const parseSalary = (gaji: string): number => {
     if (!gaji || typeof gaji !== 'string') return 0;
     const cleaned = gaji.replace(/rp|\.| /gi, '').split('-')[0];
     return parseInt(cleaned, 10) || 0;
 };
 
-const JobVisualization = ({ data }: { data: DataItem[] }) => {
-    const processedData = useMemo(() => {
-        const jobCounts = new Map<string, { count: number; totalGaji: number }>();
-        
-        data.forEach(item => {
+// Tipe data untuk JobVisualization
+type ProcessedJobData = {
+    jabatan: string;
+    peminat: number;
+};
+
+// ===================================================================================
+// KOMPONEN VISUALISASI JABATAN (JobVisualization)
+// ===================================================================================
+const JobVisualization = ({ mainData, selectedSector, selectedPendidikan, selectedGaji, gajiOptions, allJabatanOptions }: { mainData: DataItem[], selectedSector: string, selectedPendidikan: string, selectedGaji: string, gajiOptions: string[], allJabatanOptions: string[] }) => {
+    const [selectedGajiFilter, setSelectedGajiFilter] = useState(selectedGaji === '' ? 'all' : selectedGaji);
+
+    useEffect(() => {
+        setSelectedGajiFilter(selectedGaji === '' ? 'all' : selectedGaji);
+    }, [selectedGaji]);
+
+    const baseFilteredData = useMemo(() => {
+        return mainData.filter(item => {
+            const jabatan = cleanData(item.JABATAN_DIINGINKAN_Normalized);
+            const pendidikanItem = cleanData(item.PENDIDIKAN);
+            const selectedSectorItem = sektorJabatanMap.find(s => s.sektor === selectedSector);
+            const jabatansInSector = selectedSectorItem?.jabatan || [];
+
+            if (selectedSector && !jabatansInSector.includes(jabatan.toLowerCase())) return false;
+            if (selectedPendidikan && pendidikanItem !== selectedPendidikan) return false;
+
+            return true;
+        });
+    }, [mainData, selectedSector, selectedPendidikan]);
+
+    const jobDemandData = useMemo(() => {
+        const jobCounts = new Map<string, number>();
+
+        const filteredByGajiAndBase = baseFilteredData.filter(item => {
+            const upahDiinginkanItem = cleanData(item.UPAH_DIINGINKAN);
+            return selectedGajiFilter === 'all' || upahDiinginkanItem === selectedGajiFilter;
+        });
+
+        filteredByGajiAndBase.forEach(item => {
             const jabatan = cleanData(item.JABATAN_DIINGINKAN_Normalized);
             if (!jabatan || jabatan.toLowerCase() === 'lain-lain') return;
-
-            const gajiNumerik = parseSalary(cleanData(item.UPAH_DIINGINKAN));
-            
-            const existing = jobCounts.get(jabatan);
-            if (existing) {
-                jobCounts.set(jabatan, {
-                    count: existing.count + 1,
-                    totalGaji: existing.totalGaji + gajiNumerik,
-                });
-            } else {
-                jobCounts.set(jabatan, { count: 1, totalGaji: gajiNumerik });
-            }
+            jobCounts.set(jabatan, (jobCounts.get(jabatan) || 0) + 1);
         });
 
-        const result: ProcessedJobData[] = [];
-        jobCounts.forEach((value, key) => {
-            result.push({
-                // PERBAIKAN: Jabatan diubah menjadi huruf kapital di sini
-                jabatan: capitalizeWords(key), 
-                peminat: value.count,
-                gajiNumerik: value.totalGaji / value.count,
-            });
-        });
+        const result: ProcessedJobData[] = Array.from(jobCounts.entries()).map(([jabatan, count]) => ({
+            jabatan: capitalizeWords(jabatan),
+            peminat: count,
+        }));
 
-        return result;
-    }, [data]);
+        return result.sort((a, b) => b.peminat - a.peminat);
+    }, [baseFilteredData, selectedGajiFilter]);
 
-    const sortedBySalary = useMemo(() => [...processedData].sort((a, b) => a.gajiNumerik - b.gajiNumerik), [processedData]);
-    const sortedByPopularity = useMemo(() => [...processedData].sort((a, b) => b.peminat - a.peminat), [processedData]);
+    const totalPeminatSektor = useMemo(() => {
+        return baseFilteredData.length;
+    }, [baseFilteredData]);
+
+    const totalPeminatSektorByWage = useMemo(() => {
+        if (selectedGajiFilter === 'all') {
+            return baseFilteredData.length;
+        }
+        return baseFilteredData.filter(item => cleanData(item.UPAH_DIINGINKAN) === selectedGajiFilter).length;
+    }, [baseFilteredData, selectedGajiFilter]);
 
     const insight = useMemo(() => {
-        if (processedData.length < 2) return null;
-        const highestSalaryJob = [...processedData].sort((a, b) => b.gajiNumerik - a.gajiNumerik)[0];
-        const lowestDemandJob = [...processedData].sort((a, b) => a.peminat - b.peminat)[0];
-        const highestDemandJob = sortedByPopularity[0];
-        return { highestSalaryJob, lowestDemandJob, highestDemandJob };
-    }, [processedData, sortedByPopularity]);
+        if (jobDemandData.length < 2) return null;
+        const highestDemandJob = jobDemandData[0];
+        const lowestDemandJob = [...jobDemandData].sort((a, b) => a.peminat - b.peminat)[0];
+
+        return { highestDemandJob, lowestDemandJob };
+    }, [jobDemandData]);
+
+    const averageAgeData = useMemo(() => {
+        const filteredForAge = baseFilteredData.filter(item => {
+            const upahDiinginkanItem = cleanData(item.UPAH_DIINGINKAN);
+            return (selectedGajiFilter === 'all' || upahDiinginkanItem === selectedGajiFilter) &&
+                cleanData(item.UMUR_SAAT_DAFTAR) !== '';
+        });
+
+        const ages = filteredForAge.map(item => parseInt(cleanData(item.UMUR_SAAT_DAFTAR), 10)).filter(age => !isNaN(age));
+        const totalAge = ages.reduce((sum, age) => sum + age, 0);
+        const average = ages.length > 0 ? Math.round(totalAge / ages.length) : 0;
+
+        return { average, count: ages.length };
+    }, [baseFilteredData, selectedGajiFilter]);
+
+    const genderData = useMemo(() => {
+        const filteredForGender = baseFilteredData.filter(item => {
+            const upahDiinginkanItem = cleanData(item.UPAH_DIINGINKAN);
+            return (selectedGajiFilter === 'all' || upahDiinginkanItem === selectedGajiFilter) &&
+                (cleanData(item.JENIS_KELAMIN) === 'l' || cleanData(item.JENIS_KELAMIN) === 'p');
+        });
+
+        const maleCount = filteredForGender.filter(item => cleanData(item.JENIS_KELAMIN) === 'l').length;
+        const femaleCount = filteredForGender.filter(item => cleanData(item.JENIS_KELAMIN) === 'p').length;
+        const totalGenderCount = maleCount + femaleCount;
+
+        return [
+            { name: 'Laki-laki', value: maleCount, percentage: totalGenderCount > 0 ? (maleCount / totalGenderCount) * 100 : 0 },
+            { name: 'Perempuan', value: femaleCount, percentage: totalGenderCount > 0 ? (femaleCount / totalGenderCount) * 100 : 0 },
+        ];
+    }, [baseFilteredData, selectedGajiFilter]);
+
+    const COLORS = ['#0088FE', '#FF8042'];
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                    <Lightbulb className="mr-2 h-6 w-6 text-yellow-500" />
-                    Insight & Rekomendasi
-                </h3>
-                {insight ? (
-                    <div className="space-y-4 text-sm text-gray-600">
-                        <div>
-                            <p className="font-semibold text-gray-800">Gaji Tertinggi 📈</p>
-                            <p>Jabatan <strong className="text-blue-600">{insight.highestSalaryJob.jabatan}</strong> menawarkan potensi gaji tertinggi di sektor ini.</p>
-                        </div>
-                        <div>
-                            <p className="font-semibold text-gray-800">Peminat Terbanyak 🔥</p>
-                            <p>Posisi <strong className="text-blue-600">{insight.highestDemandJob.jabatan}</strong> adalah yang paling populer dengan <strong className="text-blue-600">{insight.highestDemandJob.peminat}</strong> peminat.</p>
-                        </div>
-                        <div>
-                            <p className="font-semibold text-gray-800">Peluang Tersembunyi 💎</p>
-                            <p>Pertimbangkan <strong className="text-blue-600">{insight.lowestDemandJob.jabatan}</strong>, yang memiliki tingkat persaingan paling rendah dengan hanya <strong className="text-blue-600">{insight.lowestDemandJob.peminat}</strong> peminat.</p>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-gray-500">Data tidak cukup untuk menghasilkan insight.</p>
-                )}
+        <div className="space-y-8">
+            {/* Dropdown Filter Gaji */}
+            <div className="flex justify-center mb-4">
+                <Select onValueChange={setSelectedGajiFilter} value={selectedGajiFilter}>
+                    <SelectTrigger className="w-[280px]"><SelectValue placeholder="Filter Rentang Gaji..." /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Semua Rentang Gaji</SelectItem>
+                        {gajiOptions
+                            .filter(opt => mainData.some(item => cleanData(item.UPAH_DIINGINKAN) === opt))
+                            .sort((a,b) => parseSalary(a) - parseSalary(b))
+                            .map(opt => (
+                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                            ))}
+                    </SelectContent>
+                </Select>
             </div>
 
-            <div className="lg:col-span-2 space-y-8">
-                <div>
-                    <h4 className="font-semibold text-center mb-2">Jabatan Berdasarkan Rata-Rata Gaji (Meningkat)</h4>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={sortedBySalary} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis type="number" hide />
-                            {/* PERBAIKAN: 'textTransform' dihapus */}
-                            <YAxis type="category" dataKey="jabatan" width={120} tick={{ fontSize: 12 }} />
-                            <Tooltip formatter={(value) => [new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value as number), "Rata-rata Gaji"]} />
-                            <Legend />
-                            <Bar dataKey="gajiNumerik" name="Gaji (Rp)" fill="#8884d8" />
-                        </BarChart>
-                    </ResponsiveContainer>
+            {/* Bagian Insight & Kartu Angka dan Chart Bawah */}
+            {/* Perubahan pada struktur grid utama untuk menempatkan header kartu baru */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+                {/* Kolom Insight & Rekomendasi (KIRI) */}
+                <div className="lg:col-span-1 bg-white p-6 rounded-lg shadow-lg flex flex-col">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <Lightbulb className="mr-2 h-6 w-6 text-yellow-500" />
+                        Insight & Rekomendasi
+                    </h3>
+                    {insight ? (
+                        <div className="space-y-4 text-sm text-gray-600 flex-grow">
+                            <div>
+                                <p className="font-semibold text-gray-800">Peminat Terbanyak 🔥</p>
+                                <p>Posisi <strong className="text-blue-600">{insight.highestDemandJob.jabatan}</strong> adalah yang paling populer dengan <strong className="text-blue-600">{insight.highestDemandJob.peminat}</strong> peminat.</p>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-gray-800">Peluang Tersembunyi 💎</p>
+                                <p>Pertimbangkan <strong className="text-blue-600">{insight.lowestDemandJob.jabatan}</strong>, yang memiliki tingkat persaingan paling rendah dengan hanya <strong className="text-blue-600">{insight.lowestDemandJob.peminat}</strong> peminat.</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-gray-500 flex-grow">Data tidak cukup untuk menghasilkan insight.</p>
+                    )}
                 </div>
-                <div>
-                    <h4 className="font-semibold text-center mb-2">Jabatan Berdasarkan Peminat (Menurun)</h4>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={sortedByPopularity} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            {/* PERBAIKAN: 'textTransform' dihapus */}
-                            <XAxis dataKey="jabatan" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={80} />
-                            <YAxis />
-                            <Tooltip formatter={(value) => [value, 'Peminat']} />
-                            <Legend />
-                            <Bar dataKey="peminat" fill="#82ca9d" />
-                        </BarChart>
-                    </ResponsiveContainer>
+
+                {/* Kolom KANAN: Header kartu baru, Kartu Angka, dan Chart Bawah (Pie & Bar) */}
+                <div className="lg:col-span-2 flex flex-col gap-4"> {/* Menggunakan flex-col untuk menumpuk header, kartu, dan chart */}
+                    {/* PERUBAHAN DI SINI: Header kartu baru */}
+                    <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg shadow-sm text-center">
+                        <h2 className="text-xl font-semibold">
+                            Analisis Peminat di Sektor <span className="text-blue-700">"{selectedSector}"</span>
+                            {selectedPendidikan && <> Lulusan <span className="text-blue-700">"{selectedPendidikan}"</span></>}
+                            {selectedGajiFilter !== 'all' && <> dengan Upah <span className="text-blue-700">"{selectedGajiFilter}"</span></>}
+                        </h2>
+                    </div>
+                    {/* AKHIR PERUBAHAN DI SINI */}
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow"> {/* Tambahkan flex-grow agar mengisi ruang sisa */}
+                        {/* Kartu 1: Total Peminat Sektor */}
+                        <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-lg shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-300">
+                            <Users className="h-12 w-12 mb-3 opacity-80" />
+                            <p className="text-sm opacity-90 mb-1 leading-tight">
+                                Total Peminat Sektor
+                            </p>
+                            <p className="text-4xl font-bold">{totalPeminatSektor.toLocaleString('id-ID')}</p>
+                            {/* PERUBAHAN DI SINI: Deskripsi kartu */}
+                            <p className="text-sm opacity-80 mt-2">Jumlah keseluruhan pencari kerja berdasarkan profil yang diinput pengguna.</p>
+                        </div>
+
+                        {/* Kartu 2: Total Peminat Sektor Berdasarkan Upah */}
+                        <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-6 rounded-lg shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-300">
+                            <DollarSign className="h-12 w-12 mb-3 opacity-80" />
+                            <p className="text-sm opacity-90 mb-1 leading-tight">
+                                Peminat dengan Upah <span className="font-bold text-lg text-yellow-200">"{selectedGajiFilter === 'all' ? 'Semua Rentang' : selectedGajiFilter}"</span>
+                            </p>
+                            <p className="text-4xl font-bold">{totalPeminatSektorByWage.toLocaleString('id-ID')}</p>
+                            {/* PERUBAHAN DI SINI: Deskripsi kartu */}
+                            <p className="text-sm opacity-80 mt-2">Jumlah pencari kerja dengan filter upah yang dipilih.</p>
+                        </div>
+
+                        {/* NEW CARD: Rata-rata Umur Peminat */}
+                        <div className="bg-gradient-to-br from-green-500 to-green-700 text-white p-6 rounded-lg shadow-xl flex flex-col items-center justify-center text-center transform hover:scale-105 transition-transform duration-300">
+                            <CalendarDays className="h-12 w-12 mb-3 opacity-80" />
+                            <p className="text-sm opacity-90 mb-1 leading-tight">
+                                Rata-rata Umur Peminat
+                            </p>
+                            <p className="text-4xl font-bold">{averageAgeData.average} Tahun</p>
+                            {/* PERUBAHAN DI SINI: Deskripsi kartu */}
+                            <p className="text-sm opacity-80 mt-2">Berdasarkan {averageAgeData.count} data peminat.</p>
+                        </div>
+
+                        {/* NEW CHART: Perbandingan Peminat Laki-laki vs. Perempuan (di bawah kartu biru) */}
+                        <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-1">
+                            <h4 className="font-semibold text-center mb-2">Perbandingan Peminat Laki-laki vs. Perempuan</h4>
+                            {genderData[0].value > 0 || genderData[1].value > 0 ? (
+                                <ResponsiveContainer width="100%" height={250}>
+                                    <PieChart>
+                                        <Pie
+                                            data={genderData}
+                                            cx="50%"
+                                            cy="50%"
+                                            labelLine={false}
+                                            outerRadius={80}
+                                            fill="#8884d8"
+                                            dataKey="value"
+                                            label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
+                                        >
+                                            {genderData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip formatter={(value, name, props) => [`${value} Peminat`, name]} />
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-64 flex items-center justify-center text-gray-500">
+                                    Tidak ada data gender peminat yang tersedia untuk filter yang dipilih.
+                                </div>
+                            )}
+                        </div>
+
+                        {/* "Jabatan Berdasarkan Peminat" (Bar Chart dengan Angka) - di bawah kartu ungu & hijau */}
+                        <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-2">
+                            <h4 className="font-semibold text-center mb-2">Jabatan Berdasarkan Peminat (Menurun)</h4>
+                            {jobDemandData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <BarChart data={jobDemandData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="jabatan" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={80} />
+                                        <YAxis />
+                                        <Tooltip formatter={(value) => [value, 'Peminat']} />
+                                        <Legend />
+                                        <Bar dataKey="peminat" fill="#82ca9d">
+                                            <LabelList dataKey="peminat" position="top" formatter={(value: number) => value.toLocaleString('id-ID')} />
+                                            {jobDemandData.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={['#82ca9d', '#ffc658', '#8884d8', '#a4de6c', '#d0ed57'][index % 5]} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="h-64 flex items-center justify-center text-gray-500">
+                                    Tidak ada data peminat yang tersedia untuk filter yang dipilih.
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            {/* LINE CHART BARU (JAN 2025 - JUN 2025) - TETAP DI DALAM JobVisualization */}
+            <div className="w-full">
+                <HistoricalJobDemandChart
+                    mainData={mainData}
+                    allJabatanOptions={allJabatanOptions}
+                    selectedSector={selectedSector}
+                    selectedGajiFilter={selectedGajiFilter}
+                    chartTitle={`Tren Peminat Jabatan di Sektor "${selectedSector}" (Jan 2025 - Jun 2025)`}
+                    startDateProp="2025-01-01"
+                    endDateProp="2025-06-30"
+                />
             </div>
         </div>
     );
@@ -188,38 +325,38 @@ const JobVisualization = ({ data }: { data: DataItem[] }) => {
 // KOMPONEN UTAMA (MainFeature.tsx)
 // ===================================================================================
 const MainFeature = () => {
-    // ... State declarations are unchanged
     const [data, setData] = useState<DataItem[]>([]);
-    const [filteredData, setFilteredData] = useState<DataItem[]>([]);
+    const [filteredData, setFilteredData] = useState<DataItem[]>([]); // Untuk tabel pencarian cepat
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const itemsPerPage = 10;
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(0); // 0: Start, 1: Sektor, 2: Pendidikan, 3: Gaji, 4: Hasil
     const [selectedSector, setSelectedSector] = useState('');
     const [selectedPendidikan, setSelectedPendidikan] = useState('');
-    const [selectedGaji, setSelectedGaji] = useState('');
+    const [selectedGaji, setSelectedGaji] = useState(''); // Gaji dari guided search
     const [pendidikanOptions, setPendidikanOptions] = useState<string[]>([]);
-    const [gajiOptions, setGajiOptions] = useState<string[]>([]);
-    const [guidedSearchResult, setGuidedSearchResult] = useState<DataItem[]>([]);
+    const [gajiOptions, setGajiOptions] = useState<string[]>([]); // Semua opsi gaji unik
+    const [allRawJabatanOptions, setAllRawJabatanOptions] = useState<string[]>([]);
 
-    // ... useEffect for fetching data is unchanged
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('/main_data.json'); 
-                const jsonData = await response.json();
-                const validData = jsonData.filter((item: any) => item.original_index && item.original_index !== "");
-                
+                const responseMain = await fetch('/main_data.json');
+                const jsonDataMain = await responseMain.json();
+                const validData = jsonDataMain.filter((item: any) => item.original_index && item.original_index !== "");
+
                 setData(validData);
                 setFilteredData(validData);
 
                 const uniquePendidikan = [...new Set(validData.map((item: DataItem) => cleanData(item.PENDIDIKAN)).filter(Boolean))];
                 const uniqueGaji = [...new Set(validData.map((item: DataItem) => cleanData(item.UPAH_DIINGINKAN)).filter(Boolean))];
-                
-                setPendidikanOptions(uniquePendidikan as string[]);
-                setGajiOptions(uniqueGaji as string[]);
-                
+                const uniqueJabatan = [...new Set(validData.map((item: DataItem) => cleanData(item.JABATAN_DIINGINKAN_Normalized)).filter(Boolean))];
+
+                setPendidikanOptions(uniquePendidikan.sort() as string[]);
+                setGajiOptions(uniqueGaji.sort((a,b) => parseSalary(a) - parseSalary(b)) as string[]);
+                setAllRawJabatanOptions(uniqueJabatan.filter(j => j !== '[]').sort() as string[]);
+
             } catch (error) {
                 console.error("Gagal memuat data:", error);
             } finally {
@@ -229,7 +366,18 @@ const MainFeature = () => {
         fetchData();
     }, []);
 
-    // ... useEffect for search term is unchanged
+    const filteredJabatanOptions = useMemo(() => {
+        if (!selectedSector || !allRawJabatanOptions.length) {
+            return allRawJabatanOptions;
+        }
+
+        const jabatansInSectorMap = sektorJabatanMap.find(s => s.sektor === selectedSector)?.jabatan || [];
+        const filtered = allRawJabatanOptions.filter(jabatan => jabatansInSectorMap.includes(jabatan.toLowerCase()));
+
+        return filtered.sort();
+    }, [selectedSector, allRawJabatanOptions]);
+
+
     useEffect(() => {
         const results = data.filter(item =>
             cleanData(item.JURUSAN).toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -257,38 +405,21 @@ const MainFeature = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
-    // ... handleNextStep and other handlers are unchanged
     const handleNextStep = () => {
         if (step < 3) {
             setStep(prev => prev + 1);
         } else {
-            let results = data;
-            
-            if (selectedSector) {
-                const jabatansInSector = sektorJabatanMap.find(s => s.sektor === selectedSector)?.jabatan || [];
-                results = results.filter(item => jabatansInSector.includes(cleanData(item.JABATAN_DIINGINKAN_Normalized).toLowerCase()));
-            }
-            if (selectedPendidikan) {
-                results = results.filter(item => cleanData(item.PENDIDIKAN) === selectedPendidikan);
-            }
-            if (selectedGaji) {
-                results = results.filter(item => cleanData(item.UPAH_DIINGINKAN) === selectedGaji);
-            }
-            
-            setGuidedSearchResult(results);
             setStep(4);
         }
     };
 
     const handleResetSearch = () => {
-        setStep(1);
+        setStep(0);
         setSelectedSector('');
         setSelectedPendidikan('');
         setSelectedGaji('');
-        setGuidedSearchResult([]);
     };
-    
-    // ... renderStepContent and the rest of the JSX are unchanged
+
     const renderStepContent = () => {
         switch (step) {
             case 1:
@@ -302,25 +433,25 @@ const MainFeature = () => {
                     </div>
                 );
             case 2:
-                 return (
+                return (
                     <div>
                         <h3 className="font-semibold mb-2">Langkah 2: Lulusan Terakhir</h3>
-                         <Select onValueChange={setSelectedPendidikan} value={selectedPendidikan}>
-                             <SelectTrigger><SelectValue placeholder="Pilih pendidikan..." /></SelectTrigger>
+                        <Select onValueChange={setSelectedPendidikan} value={selectedPendidikan}>
+                            <SelectTrigger><SelectValue placeholder="Pilih pendidikan..." /></SelectTrigger>
                             <SelectContent>{pendidikanOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>
                 );
             case 3:
                 return (
-                     <div>
-                         <h3 className="font-semibold mb-2">Langkah 3: Rentang Gaji</h3>
-                         <Select onValueChange={setSelectedGaji} value={selectedGaji}>
-                             <SelectTrigger><SelectValue placeholder="Pilih rentang gaji..." /></SelectTrigger>
-                             <SelectContent>{gajiOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                         </Select>
+                    <div>
+                        <h3 className="font-semibold mb-2">Langkah 3: Rentang Gaji</h3>
+                        <Select onValueChange={setSelectedGaji} value={selectedGaji}>
+                            <SelectTrigger><SelectValue placeholder="Pilih rentang gaji..." /></SelectTrigger>
+                            <SelectContent>{gajiOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
+                        </Select>
                     </div>
-                 );
+                );
             default: return null;
         }
     };
@@ -333,14 +464,14 @@ const MainFeature = () => {
         <div className="container mx-auto py-8 px-4">
             <h1 className="text-3xl font-bold mb-2 text-gray-800">Data Pencari Kerja</h1>
             <p className="text-gray-600 mb-6">Gunakan kotak di bawah untuk pencarian cepat atau gunakan pencarian terpandu.</p>
-            
+
             <div className="flex items-center mb-6">
                 <div className="relative w-full max-w-lg">
                     <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     <Input type="text" placeholder="Cari berdasarkan jurusan, jabatan, keterampilan, dll..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
                 </div>
             </div>
-            
+
             <div className="rounded-lg border shadow-sm overflow-x-auto">
                 <Table>
                     <TableHeader>
@@ -398,7 +529,7 @@ const MainFeature = () => {
                     </TableBody>
                 </Table>
             </div>
-            
+
             <div className="flex items-center justify-end space-x-4 py-4">
                 <span className="text-sm text-gray-600">Halaman {currentPage} dari {totalPages}</span>
                 <div className="flex items-center space-x-2">
@@ -427,7 +558,7 @@ const MainFeature = () => {
                         </Button>
                     </div>
                 )}
-                
+
                 {step > 0 && step < 4 && (
                     <div className="space-y-6">
                         {renderStepContent()}
@@ -445,16 +576,29 @@ const MainFeature = () => {
 
                 {step === 4 && (
                     <div>
-                        <div className='mb-4'>
-                            <p className='text-gray-700 font-semibold'>Hasil dan insight untuk sektor: <span className="text-blue-600">{selectedSector}</span></p>
+                        <JobVisualization
+                            mainData={data}
+                            selectedSector={selectedSector}
+                            selectedPendidikan={selectedPendidikan}
+                            selectedGaji={selectedGaji}
+                            gajiOptions={gajiOptions}
+                            allJabatanOptions={filteredJabatanOptions}
+                        />
+
+                        {/* LINE CHART UTAMA (JAN 2022 - JUN 2025) - POSISI SEBELUMNYA */}
+                        <hr className="my-8" />
+                        <div className="w-full">
+                            <HistoricalJobDemandChart
+                                mainData={data}
+                                allJabatanOptions={filteredJabatanOptions}
+                                selectedSector={selectedSector}
+                                chartTitle={`Tren Peminat Jabatan di Sektor "${selectedSector}" (Jan 2022 - Jun 2025)`}
+                                startDateProp="2022-01-01"
+                                endDateProp="2025-06-30"
+                                selectedGajiFilter={selectedGaji}
+                            />
                         </div>
-                        {guidedSearchResult.length > 0 ? (
-                            <JobVisualization data={guidedSearchResult} />
-                        ) : (
-                            <div className="h-48 text-center flex items-center justify-center bg-white rounded-lg shadow-inner">
-                                <p className="text-gray-500">Tidak ada data yang cocok untuk divisualisasikan.<br/>Coba ubah kriteria pencarian Anda.</p>
-                            </div>
-                        )}
+
                     </div>
                 )}
             </div>

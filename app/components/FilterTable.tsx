@@ -109,7 +109,7 @@ export default function FilterableTable({ initialData }: { initialData: string[]
           </div>
       ) : (
           <div className="text-center py-10">
-              <p className="text-gray-500 font-semibold">Tidak ada data yang cocok untuk kecamatan "{activeFilter}".</p>
+              <p className="text-gray-500 font-semibold">Tidak ada data yang cocok untuk kecamata `&quot;`{activeFilter}`&quot;`.</p>
           </div>
       )}
     </>
