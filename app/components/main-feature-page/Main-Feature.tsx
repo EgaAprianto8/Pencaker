@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -8,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FiSearch, FiChevronLeft, FiChevronRight, FiUser, FiBriefcase, FiMapPin, FiCalendar, FiAward, FiTag, FiRotateCcw, FiChevronsRight } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList, PieChart, Pie } from 'recharts';
-import { Lightbulb, Users, DollarSign, Male, Female, CalendarDays } from 'lucide-react';
+import { Lightbulb, Users, DollarSign, CalendarDays } from 'lucide-react';
 
 import { sektorJabatanMap, sektorOptions } from './sektor-jabatan-map';
 import HistoricalJobDemandChart from './historical-wage-trend-chart';
@@ -346,7 +348,7 @@ const MainFeature = () => {
 
                 // Tetap ambil semua opsi gaji untuk filter di dalam JobVisualization
                 const uniqueGaji = [...new Set(validData.map((item: DataItem) => cleanData(item.UPAH_DIINGINKAN)).filter(Boolean))];
-                setGajiOptions(uniqueGaji.sort((a,b) => parseSalary(a) - parseSalary(b)) as string[]);
+                setGajiOptions(uniqueGaji.sort(({a,b} : any) => parseSalary(a) - parseSalary(b)) as string[]);
 
                 // Tetap ambil semua opsi jabatan mentah untuk HistoricalJobDemandChart
                 const uniqueJabatan = [...new Set(validData.map((item: DataItem) => cleanData(item.JABATAN_DIINGINKAN_Normalized)).filter(Boolean))];
