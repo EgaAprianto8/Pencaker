@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { format, parseISO } from 'date-fns';
 import { SimpleLinearRegression } from 'ml-regression';
+import { ReferenceArea } from 'recharts';
 
 import { sektorJabatanMap } from './sektor-jabatan-map';
 
@@ -19,6 +20,7 @@ interface HistoricalJobDemandChartProps {
   startDateProp?: string;
   endDateProp?: string;
   selectedGajiFilter: string | null;
+  selectedPendidikanFilter?: string; 
 }
 
 type DataItem = {
@@ -247,47 +249,77 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
 
       {aggregatedTrendData.length > 0 ? (
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={aggregatedTrendData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={aggregatedTrendData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <ReferenceArea
+                x1="Jan 22"
+                x2="Jun 25"
+                y1={0}
+                ifOverflow="extendDomain"
+                fill="#e0f2fe"
+                fillOpacity={0.3}
+                label={{
+                value: "Angkatan Kerja 2022–2025",
+                position: "insideTopLeft",
+                fill: "#0ea5e9",
+                fontSize: 12,
+                fontWeight: "bold",
+                }}
+            />
+            <ReferenceArea
+                x1="Jul 25"
+                x2="Jun 26"
+                y1={0}
+                ifOverflow="extendDomain"
+                fill="#fef3c7"
+                fillOpacity={0.4}
+                label={{
+                value: "Zona Prediksi",
+                position: "insideTopLeft",
+                fill: "#f59e0b",
+                fontSize: 12,
+                fontWeight: "bold",
+                }}
+            />
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="name"
-              tick={CustomXAxisTick}
-              interval="preserveStartEnd"
-              height={60}
+                dataKey="name"
+                tick={CustomXAxisTick}
+                interval="preserveStartEnd"
+                height={60}
             />
             <YAxis
-              tickFormatter={formatPeminat}
-              label={{ value: 'Jumlah Peminat', angle: -90, position: 'insideLeft' }}
+                tickFormatter={formatPeminat}
+                label={{ value: 'Jumlah Peminat', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip
-              formatter={(value, name) => [`${formatPeminat(value)} Peminat`, name]}
-              labelFormatter={label => `Periode: ${label}`}
+                formatter={(value, name) => [`${formatPeminat(value)} Peminat`, name]}
+                labelFormatter={label => `Periode: ${label}`}
             />
             {selectedJabatan.map(jabatan => {
-              const colorIndex = allJabatanOptions.indexOf(jabatan);
-              const color = colors[colorIndex % colors.length];
-              const dataKey = capitalizeWords(jabatan);
-              return (
+                const colorIndex = allJabatanOptions.indexOf(jabatan);
+                const color = colors[colorIndex % colors.length];
+                const dataKey = capitalizeWords(jabatan);
+                return (
                 <Line
-                  key={jabatan}
-                  type="monotone"
-                  dataKey={dataKey}
-                  stroke={color}
-                  strokeWidth={2}
-                  strokeDasharray={
+                    key={jabatan}
+                    type="monotone"
+                    dataKey={dataKey}
+                    stroke={color}
+                    strokeWidth={2}
+                    strokeDasharray={
                     (dataKey.includes('26') ||
-                      (dataKey.includes('25') && ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].some(m => dataKey.includes(m))))
-                      ? '5 5'
-                      : undefined
-                  }
-                  dot={false}
-                  activeDot={{ r: 6 }}
-                  name={capitalizeWords(jabatan)}
-                  connectNulls
+                        (dataKey.includes('25') && ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].some(m => dataKey.includes(m))))
+                        ? '5 5'
+                        : undefined
+                    }
+                    dot={false}
+                    activeDot={{ r: 6 }}
+                    name={capitalizeWords(jabatan)}
+                    connectNulls
                 />
-              );
+                );
             })}
-          </LineChart>
+            </LineChart>
         </ResponsiveContainer>
       ) : (
         <div className="h-64 flex items-center justify-center text-gray-500">
