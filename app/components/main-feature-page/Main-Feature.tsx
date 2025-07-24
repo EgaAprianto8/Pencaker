@@ -385,29 +385,41 @@ const baseFilteredDataForOtherEdu = useMemo(() => {
                     </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h4 className="font-semibold text-center mb-2">
-            Peminat Sektor Berdasarkan Jenis Kelamin
-        </h4>
-        <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-            <Pie
-                data={genderData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label={({ name, percentage }) => `${name} (${percentage.toFixed(1)}%)`}
-            >
-                {genderData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-            </Pie>
-            <Tooltip />
-            </PieChart>
-        </ResponsiveContainer>
-        </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h4 className="font-semibold text-center mb-2">
+              Peminat Sektor Berdasarkan Jenis Kelamin
+            </h4>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={genderData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  labelLine={false}
+                  label={({ name, percentage }) => `${percentage.toFixed(1)}%`}
+                  fontSize={12}
+                  fontWeight="bold"
+                  fill="#fff"
+                >
+                  {genderData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value, name) => [`${value} orang`, name]} />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  iconType="circle"
+                  formatter={(value, entry) => (
+                    <span style={{ color: '#333' }}>{value}</span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
 
             <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-2">
               <h4 className="font-semibold text-center mb-2">Jabatan Berdasarkan Peminat</h4>
