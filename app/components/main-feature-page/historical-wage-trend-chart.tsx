@@ -1,4 +1,3 @@
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -9,7 +8,8 @@ import {
 } from 'recharts';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label }    from "@/components/ui/label";
-import { format, parseISO } from 'date-fns';
+import { Button } from "@/components/ui/button"; // Import Button component
+import { format, parseISO, getYear } from 'date-fns';
 import { SimpleLinearRegression } from 'ml-regression';
 import { sektorJabatanMap } from './sektor-jabatan-map';
 
@@ -42,7 +42,7 @@ type DataItem = {
   JABATAN_DIINGINKAN_Normalized: string;
   wilayah_diinginkan_detail_normalized: string;
   keterampilan_cleaned: string;
-};  
+};
 
 // Utility
 const cleanData = (v:any) =>
@@ -58,7 +58,7 @@ const colors = [
   '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', '#e31a1c', '#fdbf6f', '#ff7f00',
   '#cab2d6', '#6a3d9a', '#ffff99', '#b15928', '#c0c0c0', '#808080', '#00FFFF', '#FFFF00',
   '#FF4500', '#DA70D6', '#20B2AA', '#7B68EE', '#BDB76B', '#FFD700', '#ADFF2F', '#F08080'
-];  
+];
 
 const CustomXAxisTick = ({ x,y,payload }:any) => {
   const [m,y2] = payload.value.split(' ');
@@ -80,8 +80,22 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
   chartTitle, startDateProp, endDateProp, selectedGajiFilter,
 }) => {
   const [selectedJabatan, setSelectedJabatan] = useState<string[]>([]);
+  const [yearColors, setYearColors] = useState<Map<number, string>>(new Map());
 
-  const { aggregatedTrendData, sortedAllJabatanOptions } = useMemo(() => {
+  const generateYearColors = (startYear: number, endYear: number) => {
+    const colorsMap = new Map<number, string>();
+    const predefinedColors = [
+      '#e0f2fe', '#ffe0b2', '#c8e6c9', '#ffccbc', '#d1c4e9', '#bbdefb', '#ffecb3', '#a7ffeb'
+    ]; // Contoh warna yang lebih lembut
+    let colorIndex = 0;
+    for (let year = startYear; year <= endYear; year++) {
+      colorsMap.set(year, predefinedColors[colorIndex % predefinedColors.length]);
+      colorIndex++;
+    }
+    return colorsMap;
+  };
+
+  const { aggregatedTrendData, sortedAllJabatanOptions, historicalStartYear, historicalEndYear } = useMemo(() => {
     // 1) Agregasi historis
     const monthly = new Map<string,Map<string,number>>();
     const popMap  = new Map<string,number>();
@@ -126,6 +140,10 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
       historical.push(o);
     });
 
+    // Tentukan tahun awal dan akhir data historis
+    const histStartYear = historical.length > 0 ? getYear(parseISO(allMonths[0]+'-01')) : 0;
+    const histEndYear = historical.length > 0 ? getYear(parseISO(allMonths[historical.length - 1]+'-01')) : 0;
+
     // 4) Forecast: **Dynamic Sliding‐Window Linear Regression**
     const forecast:any[] = [];
     popMap.forEach((_, jrRaw) => {
@@ -142,7 +160,7 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
       // Untuk tiap bulan k, fitting ulang model di window yang berubah
       for(let k=1;k<=12;k++){
         // Tentukan window size (misal bertambah seiring k)
-        const windowSize = 3 + k;              // dari 4 bulan ke 15 bulan
+        const windowSize = 3 + k;           // dari 4 bulan ke 15 bulan
         const startW     = Math.max(0, xs.length - windowSize);
         const xWin       = xs.slice(startW);
         const yWin       = ys.slice(startW);
@@ -172,13 +190,26 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
     return {
       aggregatedTrendData: [...historical, ...forecast],
       sortedAllJabatanOptions: sorted,
+      historicalStartYear: histStartYear,
+      historicalEndYear: histEndYear
     };
   }, [mainData, selectedSector, startDateProp, endDateProp, selectedGajiFilter]);
 
   // Pilih 3 teratas
   useEffect(()=>{
     setSelectedJabatan(sortedAllJabatanOptions.slice(0,3));
-  },[sortedAllJabatanOptions]);
+    if (historicalStartYear && historicalEndYear) {
+      setYearColors(generateYearColors(historicalStartYear, historicalEndYear));
+    }
+  },[sortedAllJabatanOptions, historicalStartYear, historicalEndYear]);
+
+  const handleSelectAll = () => {
+    setSelectedJabatan(sortedAllJabatanOptions);
+  };
+
+  const handleResetSelection = () => {
+    setSelectedJabatan([]);
+  };
 
   const formatP = (v:any) =>
     typeof v==='number'&&!isNaN(v) ? v.toLocaleString('id-ID') : '0';
@@ -189,13 +220,22 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
     </div>;
   }
 
+  // Mendapatkan rentang bulan untuk zona prediksi
+  const predictionZoneStartMonth = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 12]?.name : '';
+  const predictionZoneEndMonth = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 1]?.name : '';
+
+
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
       <h3 className="text-xl font-bold text-gray-800 mb-4">
         {chartTitle||`Tren Peminat Jabatan di Sektor \"${selectedSector}\"`}
       </h3>
-      <div className="flex flex-wrap gap-x-6 gap-y-3 mb-6 max-h-48 overflow-y-auto pr-4 border-b pb-4">
+      <div className="flex flex-wrap gap-x-6 gap-y-3 mb-4 max-h-48 overflow-y-auto pr-4 border-b pb-4">
         <p className="font-semibold w-full">Pilih Jabatan:</p>
+        <div className="flex space-x-4 mb-2 w-full">
+          <Button onClick={handleSelectAll} variant="outline" size="sm">Pilih Semua</Button>
+          <Button onClick={handleResetSelection} variant="outline" size="sm">Reset</Button>
+        </div>
         {sortedAllJabatanOptions.map(jab=> {
           const idx = allJabatanOptions.indexOf(jab.toLowerCase());
           const clr = colors[idx%colors.length];
@@ -219,18 +259,49 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
       {aggregatedTrendData.length>0 ? (
         <ResponsiveContainer width="100%" height={400}>
           <LineChart data={aggregatedTrendData} margin={{top:10, right:30, left:20, bottom:5}}>
-            <ReferenceArea
-              x1="Jan 22" x2="Jun 25" y1={0}
-              fill="#e0f2fe" fillOpacity={0.3}
-              label={{value:"Angkatan Kerja 2022–2025",position:"insideTopLeft",
-                      fill:"#0ea5e9",fontSize:12,fontWeight:"bold"}}
-            />
-            <ReferenceArea
-              x1="Jul 25" x2="Jun 26" y1={0}
-              fill="#fef3c7" fillOpacity={0.4}
-              label={{value:"Zona Prediksi",position:"insideTopLeft",
-                      fill:"#f59e0b",fontSize:12,fontWeight:"bold"}}
-            />
+            {/* ReferenceArea untuk setiap tahun historis */}
+            {[...Array(historicalEndYear - historicalStartYear + 1)].map((_, i) => {
+              const year = historicalStartYear + i;
+              const firstMonthOfYear = aggregatedTrendData.find(item => item.name.endsWith(`${year % 100}`));
+              const lastMonthOfYear = aggregatedTrendData.slice().reverse().find(item => item.name.endsWith(`${year % 100}`));
+
+              if (!firstMonthOfYear || !lastMonthOfYear) return null;
+
+              // Pastikan rentang area tidak tumpang tindih dengan zona prediksi
+              const x2Value = year === historicalEndYear ? format(parseISO(endDateProp || '2025-06-30'), 'MMM yy') : lastMonthOfYear.name;
+
+              return (
+                <ReferenceArea
+                  key={`year-area-${year}`}
+                  x1={firstMonthOfYear.name}
+                  x2={x2Value}
+                  y1={0}
+                  fill={yearColors.get(year)}
+                  fillOpacity={0.3}
+                  label={{
+                    value: `${year}`,
+                    position: "insideTopLeft",
+                    fill: "#333", // Warna teks lebih netral
+                    fontSize: 12,
+                    fontWeight: "bold"
+                  }}
+                />
+              );
+            })}
+
+            {/* Zona Prediksi */}
+            {predictionZoneStartMonth && predictionZoneEndMonth && (
+              <ReferenceArea
+                x1={predictionZoneStartMonth}
+                x2={predictionZoneEndMonth}
+                y1={0}
+                fill="#fef3c7" // Tetap kuning untuk zona prediksi
+                fillOpacity={0.4}
+                label={{value:"Zona Prediksi",position:"insideTopLeft",
+                  fill:"#f59e0b",fontSize:12,fontWeight:"bold"}}
+              />
+            )}
+
             <CartesianGrid strokeDasharray="3 3"/>
             <XAxis dataKey="name" tick={CustomXAxisTick} interval="preserveStartEnd" height={60}/>
             <YAxis tickFormatter={formatP} label={{value:'Jumlah Peminat',angle:-90,position:'insideLeft'}}/>
@@ -241,7 +312,22 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
             {selectedJabatan.map(jab=>{
               const idx = allJabatanOptions.indexOf(jab.toLowerCase());
               const clr = colors[idx%colors.length];
-              const isPred = (nm:string)=> nm.includes('25')|| nm.includes('26');
+              // Hapus fungsi isPred karena tidak lagi diperlukan untuk strokeDasharray
+              // const isPred = (name:string) => {
+              //   const parts = name.split(' ');
+              //   if (parts.length === 2) {
+              //     const year = parseInt(parts[1], 10);
+              //     const month = parts[0];
+              //     if (year === 25 && (month === 'Jul' || month === 'Aug' || month === 'Sep' || month === 'Oct' || month === 'Nov' || month === 'Dec')) {
+              //       return true;
+              //     }
+              //     if (year === 26) {
+              //       return true;
+              //     }
+              //   }
+              //   return false;
+              // };
+
               return (
                 <Line
                   key={jab}
@@ -249,7 +335,10 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
                   dataKey={jab}
                   stroke={clr}
                   strokeWidth={2}
-                  strokeDasharray={isPred(jab)?'5 5':undefined}
+                  // Hapus properti strokeDasharray
+                  // strokeDasharray={
+                  //   (aggregatedTrendData.some(dataPoint => isPred(dataPoint.name) && dataPoint[jab] !== null)) ? '5 5' : undefined
+                  // }
                   dot={false}
                   activeDot={{r:6}}
                   connectNulls
