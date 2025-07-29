@@ -1,0 +1,38 @@
+[
+    {
+        "Uraian": "SD ke Bawah",
+        "Laki-laki": 30.34,
+        "Perempuan": 19.31,
+        "Total": 26.76
+    },
+    {
+        "Uraian": "SMP",
+        "Laki-laki": 8.47,
+        "Perempuan": 11.77,
+        "Total": 9.54
+    },
+    {
+        "Uraian": "SMA Umum",
+        "Laki-laki": 21.07,
+        "Perempuan": 26.03,
+        "Total": 22.68
+    },
+    {
+        "Uraian": "SMK Kejuruan",
+        "Laki-laki": 31.41,
+        "Perempuan": 35.38,
+        "Total": 32.7
+    },
+    {
+        "Uraian": "DI/II/III/Universitas",
+        "Laki-laki": 8.72,
+        "Perempuan": 7.5,
+        "Total": 8.32
+    },
+    {
+        "Uraian": "Jumlah",
+        "Laki-laki": 100.0,
+        "Perempuan": 100.0,
+        "Total": 100.0
+    }
+]

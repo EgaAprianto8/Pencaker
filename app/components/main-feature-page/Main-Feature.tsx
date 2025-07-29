@@ -13,10 +13,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Lightbulb, Users, CalendarDays } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 
+// Import useSearchParams
+import { useSearchParams } from 'next/navigation';
+
 import { sektorJabatanMap, sektorOptions } from './sektor-jabatan-map';
 import HistoricalJobDemandChart from './historical-wage-trend-chart';
-// Pastikan path import ini benar sesuai lokasi file Anda
 import RecommendationPanel from './recommendation/recommendation-panel';
+import JobSeekerTable from './jobseektertable';
 
 // Definitions (pastikan ini tetap di MainFeature atau dipindahkan ke file terpisah dan diimpor)
 interface SektorJabatanMapItem {
@@ -127,6 +130,7 @@ const JobVisualization = ({
 }: JobVisualizationProps) => {
 
     const MIN_WIDTH_PER_JOB_GROUP = 150;
+    // Calculate dynamic width for 'Peminat Gaji Berdasarkan Jabatan' chart
     const chartDynamicWidth = Math.max(jobWageDemandData.length * MIN_WIDTH_PER_JOB_GROUP, 500);
 
     const PIE_COLORS = ['#0088FE', '#FF8042'];
@@ -258,6 +262,40 @@ const JobVisualization = ({
         return result.sort((a, b) => b.total - a.total);
     }, [mainData, selectedSector, selectedPendidikan, selectedGaji, showOtherEduComparison]);
 
+    // Urutkan gajiOptions sekali saja di awal untuk digunakan di Legend dan Bar
+    const sortedGajiOptions = useMemo(() => {
+        return [...gajiOptions].sort((a, b) => {
+            const parseA = parseSalary(a.split('-')[0].trim());
+            const parseB = parseSalary(b.split('-')[0].trim());
+
+            // Handle "> rp 10.000.000" case
+            if (a.includes('> rp') && b.includes('> rp')) {
+                const numA = parseFloat(a.replace('> rp', '').replace(/\./g, '').trim());
+                const numB = parseFloat(b.replace('> rp', '').replace(/\./g, '').trim());
+                return numA - numB;
+            }
+            if (a.includes('> rp')) return 1; // "> rp 10.000.000" should be last
+            if (b.includes('> rp')) return -1; // "> rp 10.000.000" should be last
+
+            return parseA - parseB;
+        });
+    }, [gajiOptions]);
+
+    // Definisikan warna untuk setiap kategori gaji
+    const WAGE_CATEGORY_COLORS: { [key: string]: string } = {
+        "0 - rp 1.000.000": "#c0c0c0", // Abu-abu terang
+        "rp 1.000.001 - rp 2.500.000": "#ffc658", // Kuning terang
+        "rp 2.500.001 - rp 5.000.000": "#8884d8", // Ungu
+        "rp 5.000.001 - rp 10.000.000": "#82ca9d", // Hijau muda
+        "> rp 10.000.000": "#e31a1c", // Merah
+    };
+
+    // Definisikan warna untuk legenda pendidikan (SMK dan Lulusan Lain)
+    const EDUCATION_COLORS: { [key: string]: string } = {
+        [selectedPendidikan]: STACKED_BAR_COLORS[0], // Warna untuk pendidikan yang dipilih user
+        'Lulusan Lain': STACKED_BAR_COLORS[1], // Warna untuk lulusan lain
+        'peminat': CHART_COLORS[0] // Warna default jika 'all' pendidikan
+    };
 
     return (
         <div className="flex flex-col gap-4">
@@ -344,16 +382,22 @@ const JobVisualization = ({
                                 nameKey="name"
                                 cx="50%"
                                 cy="50%"
-                                outerRadius={90}
-                                labelLine={false}
-                                label={({ name, percentage }) => `${percentage.toFixed(1)}%`}
-                                fontSize={12}
-                                fontWeight="bold"
-                                fill="#fff"
+                                outerRadius={80} // Disesuaikan agar label tidak terlalu dekat dengan tepi
+                                labelLine={false} // Tidak menampilkan garis dari label ke irisan
                             >
                                 {genderData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                                 ))}
+                                <LabelList
+                                    dataKey="percentage" // Menggunakan dataKey 'percentage'
+                                    position="inside" // Menempatkan label di dalam irisan
+                                    formatter={(value: number) => `${value.toFixed(1)}%`} // Format sebagai persentase
+                                    fill="#fff" // Warna teks label putih untuk kontras
+                                    fontSize={12} // Ukuran font
+                                    // Offset untuk mencegah teks terlalu dekat ke tengah
+                                    dy={0}
+                                    className="pointer-events-none" // Mencegah interaksi mouse dengan label
+                                />
                             </Pie>
                             <Tooltip formatter={(value, name) => [`${value} orang`, name]} />
                             <Legend
@@ -374,69 +418,123 @@ const JobVisualization = ({
                     {selectedPendidikan && selectedPendidikan !== 'all' && (
                         <div className="absolute top-4 right-4 z-10">
                             <Button onClick={() => setShowOtherEduComparison(prev => !prev)} variant="outline" size="sm">
-                                {showOtherEduComparison ? 'Sembunyikan Data Lulusan Lain' : 'Tampilkan Data Lulusan Lain'}
+                                {showOtherEduComparison ? 'Sembunyikan' : 'Bandingkan Lulusan Lain'}
                                 <FiEye className="ml-1" />
                             </Button>
                         </div>
                     )}
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={combinedJobDemandData} margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="jabatan" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={20} />
-                            <YAxis />
-                            <Tooltip formatter={(value: number, name?: string) => [`${value.toLocaleString('id-ID')} Peminat`, name || '']} />
-                            {(selectedPendidikan !== 'all') && (
-                                <Legend
-                                    verticalAlign="bottom"
-                                    height={20}
-                                    iconType="circle"
-                                    wrapperStyle={{ paddingTop: '20px' }}
-                                    formatter={(value, entry) => {
-                                        if (value === selectedPendidikan) {
-                                            return <span style={{ color: '#333' }}> {value}</span>;
-                                        } else if (value === 'Lulusan Lain') {
-                                            return <span style={{ color: '#333' }}> lulusan lain</span>;
-                                        }
-                                        return <span style={{ color: '#333' }}>{value}</span>;
-                                    }}
-                                />
-                            )}
+                    {/* Tambahkan div dengan overflowX: 'auto' untuk scroll */}
+                    <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '20px' }}>
+                        {/* Legenda Kustom dengan posisi sticky untuk Jabatan Berdasarkan Peminat */}
+                        {(selectedPendidikan !== 'all') && ( // Hanya tampilkan jika pendidikan spesifik dipilih
+                            <div
+                                style={{
+                                    position: 'sticky',
+                                    left: 0,
+                                    top: 0,
+                                    zIndex: 10,
+                                    backgroundColor: 'white',
+                                    padding: '10px 0',
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    gap: '15px',
+                                    borderBottom: '1px solid #eee',
+                                    marginBottom: '10px',
+                                }}
+                            >
+                                {chartKeys.map((key, index) => (
+                                    <div key={key} className="flex items-center">
+                                        <span
+                                            className="inline-block w-3 h-3 rounded-full mr-2"
+                                            style={{ backgroundColor: EDUCATION_COLORS[key] || STACKED_BAR_COLORS[index % STACKED_BAR_COLORS.length] }}
+                                        ></span>
+                                        <span className="text-sm text-gray-700">
+                                            {key === selectedPendidikan ? selectedPendidikan : 'Lulusan Lain'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <ResponsiveContainer width={Math.max(combinedJobDemandData.length * 70, 400)} height={300}>
+                            <BarChart data={combinedJobDemandData} margin={{ top: 20, right: 30, left: 0, bottom: 50 }}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="jabatan" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={60} />
+                                <YAxis />
+                                <Tooltip formatter={(value: number, name?: string) => [`${value.toLocaleString('id-ID')} Peminat`, name || '']} />
+                                {/* Menghapus Legend bawaan Recharts di sini */}
 
-                            {chartKeys.map((key, index) => (
-                                <Bar
-                                    key={key}
-                                    dataKey={key}
-                                    stackId={selectedPendidikan !== 'all' ? "a" : undefined}
-                                    fill={selectedPendidikan === 'all' ? CHART_COLORS[index % CHART_COLORS.length] : STACKED_BAR_COLORS[index % STACKED_BAR_COLORS.length]}
-                                    name={selectedPendidikan === 'all' ? 'Total Peminat' : key}
-                                >
-                                    {!showOtherEduComparison && selectedPendidikan === 'all' && (
-                                        <LabelList dataKey="peminat" position="top" formatter={(value: number) => value.toLocaleString('id-ID')} />
-                                    )}
-                                </Bar>
-                            ))}
-                            {combinedJobDemandData.length === 0 && (
-                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#666" fontSize="14">
-                                    Tidak ada data yang tersedia untuk kombinasi filter ini.
-                                </text>
-                            )}
-                        </BarChart>
-                    </ResponsiveContainer>
+                                {chartKeys.map((key, index) => (
+                                    <Bar
+                                        key={key}
+                                        dataKey={key}
+                                        stackId={selectedPendidikan !== 'all' ? "a" : undefined}
+                                        fill={selectedPendidikan === 'all' ? CHART_COLORS[index % CHART_COLORS.length] : EDUCATION_COLORS[key]}
+                                        name={selectedPendidikan === 'all' ? 'Total Peminat' : key}
+                                    >
+                                        {!showOtherEduComparison && selectedPendidikan === 'all' && (
+                                            <LabelList dataKey="peminat" position="top" formatter={(value: number) => value.toLocaleString('id-ID')} />
+                                        )}
+                                    </Bar>
+                                ))}
+                                {combinedJobDemandData.length === 0 && (
+                                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#666" fontSize="14">
+                                        Tidak ada data yang tersedia untuk kombinasi filter ini.
+                                    </text>
+                                )}
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-3">
                     <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Peminat Gaji Berdasarkan Jabatan</h3>
                     {jobWageDemandData.length > 0 && hasNonZeroDataForGroupedChart ? (
-                        <div style={{ overflowX: 'auto' }}>
+                        <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '20px' }}>
+                            {/* Legenda Kustom dengan posisi sticky */}
+                            <div
+                                style={{
+                                    position: 'sticky',
+                                    left: 0,
+                                    top: 0,
+                                    zIndex: 10,
+                                    backgroundColor: 'white',
+                                    padding: '10px 0',
+                                    width: '100%',
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    justifyContent: 'center',
+                                    gap: '15px',
+                                    borderBottom: '1px solid #eee',
+                                    marginBottom: '10px',
+                                }}
+                            >
+                                {sortedGajiOptions.map((wageCategory, index) => (
+                                    <div key={wageCategory} className="flex items-center">
+                                        <span
+                                            className="inline-block w-3 h-3 rounded-full mr-2"
+                                            style={{ backgroundColor: WAGE_CATEGORY_COLORS[wageCategory] || CHART_COLORS[index % CHART_COLORS.length] }}
+                                        ></span>
+                                        <span className="text-sm text-gray-700">{wageCategory}</span>
+                                    </div>
+                                ))}
+                            </div>
+
                             <ResponsiveContainer width={chartDynamicWidth} minWidth="100%" height={400}>
-                                <BarChart data={jobWageDemandData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }} barCategoryGap="10%">
+                                <BarChart data={jobWageDemandData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" interval={0} angle={-45} textAnchor="end" height={100} />
                                     <YAxis label={{ value: 'Jumlah Peminat', angle: -90, position: 'insideLeft' }} />
                                     <Tooltip formatter={(value: number, name?: string) => [`${value.toLocaleString('id-ID')} Peminat`, name || '']} />
-                                    <Legend />
-                                    {gajiOptions.map((wageCategory, index) => (
-                                        <Bar key={wageCategory} dataKey={wageCategory} fill={CHART_COLORS[index % CHART_COLORS.length]} name={wageCategory} />
+                                    {/* Menghapus Legend bawaan Recharts */}
+                                    {sortedGajiOptions.map((wageCategory, index) => (
+                                        <Bar
+                                            key={wageCategory}
+                                            dataKey={wageCategory}
+                                            fill={WAGE_CATEGORY_COLORS[wageCategory] || CHART_COLORS[index % CHART_COLORS.length]}
+                                            name={wageCategory}
+                                        />
                                     ))}
                                 </BarChart>
                             </ResponsiveContainer>
@@ -457,6 +555,7 @@ const JobVisualization = ({
 // KOMPONEN UTAMA MainFeature
 // ===================================================================================
 const MainFeature = () => {
+    const searchParams = useSearchParams(); // Hook untuk membaca query params
     const [data, setData] = useState<DataItem[]>([]);
     const [filteredData, setFilteredData] = useState<DataItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -499,6 +598,20 @@ const MainFeature = () => {
                 const uniqueJabatan = [...new Set(validData.map((item: DataItem) => cleanData(item.JABATAN_DIINGINKAN_Normalized)).filter(Boolean))];
                 setAllRawJabatanOptions(uniqueJabatan.filter(j => j !== '[]').sort() as string[]);
 
+                // Baca parameter dari URL setelah data dimuat
+                const sektorUtamaParam = searchParams.get('sektorUtama');
+                const sektorParam = searchParams.get('sektor');
+                const pendidikanParam = searchParams.get('pendidikan');
+                const gajiParam = searchParams.get('gaji');
+
+                if (sektorUtamaParam && sektorParam && pendidikanParam && gajiParam) {
+                    // Set state berdasarkan parameter URL
+                    setSelectedSector(sektorParam);
+                    setSelectedPendidikan(pendidikanParam);
+                    setSelectedGaji(gajiParam);
+                    setStep(4); // Langsung ke langkah analisis
+                }
+
             } catch (error) {
                 console.error("Gagal memuat data:", error);
             } finally {
@@ -506,7 +619,7 @@ const MainFeature = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [searchParams]); // Tambahkan searchParams sebagai dependency agar effect dijalankan ulang jika URL berubah
 
     const filteredPendidikanOptions = useMemo(() => {
         if (!selectedSector) {
@@ -795,19 +908,20 @@ const MainFeature = () => {
             aggregated[job][wage] = (aggregated[job][wage] || 0) + 1;
         });
 
-        return Array.from(uniqueJobs)
-            .sort((a, b) => {
-                const totalA = gajiOptions.reduce((sum, wageCat) => sum + (aggregated[a]?.[wageCat] || 0), 0);
-                const totalB = gajiOptions.reduce((sum, wageCat) => sum + (aggregated[b]?.[wageCat] || 0), 0);
-                return totalB - totalA;
-            })
-            .map(job => {
-                const dataPoint: { name: string; [key: string]: string | number } = { name: capitalizeWords(job) };
-                gajiOptions.forEach(wageCategory => {
-                    dataPoint[wageCategory] = aggregated[job]?.[wageCategory] || 0;
-                });
-                return dataPoint;
+        // Urutkan jabatan berdasarkan total peminat untuk semua kategori gaji
+        const sortedJobsByTotalPeminat = Array.from(uniqueJobs).sort((a, b) => {
+            const totalPeminatA = gajiOptions.reduce((sum, wageCat) => sum + (aggregated[a]?.[wageCat] || 0), 0);
+            const totalPeminatB = gajiOptions.reduce((sum, wageCat) => sum + (aggregated[b]?.[wageCat] || 0), 0);
+            return totalPeminatB - totalPeminatA;
+        });
+
+        return sortedJobsByTotalPeminat.map(job => {
+            const dataPoint: { name: string; [key: string]: string | number } = { name: capitalizeWords(job) };
+            gajiOptions.forEach(wageCategory => {
+                dataPoint[wageCategory] = aggregated[job]?.[wageCategory] || 0;
             });
+            return dataPoint;
+        });
     }, [baseFilteredData, gajiOptions]);
 
     const MIN_PEMINAT_FOR_HIGH_WAGE_INSIGHT = 5;
@@ -839,12 +953,12 @@ const MainFeature = () => {
                                // Also check if its overall demand is not the highest
                                const overallDemand = jobDemandData.find(j => j.jabatan === jobDataPoint.name)?.peminat || 0;
                                if (overallDemand > 0 && (highestDemandJob ? overallDemand < highestDemandJob.peminat * 0.75 : true)) { // Arbitrary threshold: less than 75% of highest demand
-                                   minPeminatForHighWage = totalPeminatHighWage;
-                                   bestJobForHighWage = {
-                                       jabatan: jobDataPoint.name,
-                                       peminat: totalPeminatHighWage,
-                                       wageCategories: highWageCategories.join(', '),
-                                   };
+                                    minPeminatForHighWage = totalPeminatHighWage;
+                                    bestJobForHighWage = {
+                                        jabatan: jobDataPoint.name,
+                                        peminat: totalPeminatHighWage,
+                                        wageCategories: highWageCategories.join(', '),
+                                    };
                                }
                     }
                 });
@@ -873,81 +987,17 @@ const MainFeature = () => {
 
     return (
         <div className="container mx-auto py-8 px-4">
-            <h1 className="text-3xl font-bold mb-2 text-gray-800">Data Pencari Kerja</h1>
-            <p className="text-gray-600 mb-6">Gunakan kotak di bawah untuk pencarian cepat atau gunakan pencarian terpandu.</p>
+            <JobSeekerTable
+                currentItems={currentItems}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                handlePreviousPage={handlePreviousPage}
+                handleNextPage={handleNextPage}
+            />
 
-            <div className="flex items-center mb-6">
-                <div className="relative w-full max-w-lg">
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <Input type="text" placeholder="Cari berdasarkan jurusan, jabatan, keterampilan, dll..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
-                </div>
-            </div>
 
-            <div className="rounded-lg border shadow-sm overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[80px] font-semibold">No.</TableHead>
-                            <TableHead className="font-semibold"><FiUser className="mr-2 inline-block" />Profil</TableHead>
-                            <TableHead className="font-semibold"><FiBriefcase className="mr-2 inline-block" />Pendidikan</TableHead>
-                            <TableHead className="font-semibold"><FiAward className="mr-2 inline-block" />Keterampilan</TableHead>
-                            <TableHead className="font-semibold"><FiTag className="mr-2 inline-block" />Jabatan & Upah</TableHead>
-                            <TableHead className="font-semibold"><FiMapPin className="mr-2 inline-block" />Lokasi</TableHead>
-                            <TableHead className="font-semibold"><FiCalendar className="mr-2 inline-block" />Tanggal Penting</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {currentItems.length > 0 ? (
-                            currentItems.map((item, index) => (
-                                <TableRow key={item.original_index} className="hover:bg-gray-50">
-                                    <TableCell className="font-medium">{indexOfFirstItem + index + 1}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cleanData(item.JENIS_KELAMIN) === 'l' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
-                                                {cleanData(item.JENIS_KELAMIN) === 'l' ? 'Laki-laki' : 'Perempuan'}
-                                            </span>
-                                            <div>
-                                                <div className="font-medium text-gray-800">{cleanData(item.UMUR_SAAT_DAFTAR)} tahun</div>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-gray-800 capitalize">{cleanData(item.JURUSAN) || '-'}</div>
-                                        <div className="text-sm text-gray-500 uppercase">{cleanData(item.PENDIDIKAN)} ({cleanData(item.TAHUN_LULUS)})</div>
-                                    </TableCell>
-                                    <TableCell className="capitalize">{cleanData(item.Keterampilan) || '-'}</TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-gray-800 capitalize">{cleanData(item.JABATAN_DIINGINKAN_Normalized)}</div>
-                                        <div className="text-sm text-gray-500">{cleanData(item.UPAH_DIINGINKAN)}</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="font-medium text-gray-800 capitalize">{cleanData(item.WILAYAH_DIINGINKAN_DETAIL)}</div>
-                                        <div className="text-sm text-gray-500 capitalize">{cleanData(item.KECAMATAN)}</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="text-sm text-gray-500">Daftar: {cleanData(item.TANGGAL_DAFTAR)}</div>
-                                        <div className="text-sm text-gray-500">Lahir: {cleanData(item.TGL_LAHIR)}</div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={7} className="h-24 text-center">
-                                    Tidak ada data yang cocok.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <div className="flex items-center justify-end space-x-4 py-4">
-                <span className="text-sm text-gray-600">Halaman {currentPage} dari {totalPages}</span>
-                <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" onClick={handlePreviousPage} disabled={currentPage === 1}><FiChevronLeft className="mr-2 h-4 w-4" /> Sebelumnya</Button>
-                    <Button variant="outline" size="sm" onClick={handleNextPage} disabled={currentPage === totalPages}>Berikutnya <FiChevronRight className="ml-2 h-4 w-4" /></Button>
-                </div>
-            </div>
 
             <hr className="my-12" />
 
@@ -1038,7 +1088,7 @@ const MainFeature = () => {
                         {/* Modifikasi Grid untuk 3 Kolom dengan Lebar Berbeda */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
                             {/* Panel Narasi Rekomendasi (Di atas pada mobile, Kolom Kanan pada laptop) */}
-                            <div className="lg:col-span-3 order-first lg:order-last flex flex-col"> {/* Added order-first and lg:order-last */}
+                            <div className="lg:col-span-3 order-first lg:order-last flex flex-col">
                                 <RecommendationPanel
                                     insight={insight}
                                     selectedSector={selectedSector}
@@ -1055,35 +1105,49 @@ const MainFeature = () => {
                             </div>
 
                             {/* Panel Insight (Kolom Kiri - Lebih Kecil, order normal) */}
-                            <div className="lg:col-span-3 flex flex-col bg-white p-6 rounded-lg shadow-lg">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                    <Lightbulb className="mr-2 h-6 w-6 text-yellow-500" />
-                                    Insight Pasar
-                                </h3>
-                                {insight ? (
-                                    <div className="w-full space-y-4 flex-grow text-sm">
-                                        <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-md border border-blue-300">
-                                            <p className="font-semibold text-blue-900 mb-0.5">Paling Diminati:</p>
-                                            <p className="text-blue-900 text-2xl font-extrabold leading-tight">"{insight.highestDemandJob?.jabatan}"</p>
-                                            <p className="text-blue-800">dengan <span className="font-bold">{insight.highestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
-                                        </div>
-                                        <div className="p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl shadow-md border border-yellow-300">
-                                            <p className="font-semibold text-yellow-900 mb-0.5">Peluang Tersembunyi:</p>
-                                            <p className="text-yellow-900 text-2xl font-extrabold leading-tight">"{insight.lowestDemandJob?.jabatan}"</p>
-                                            <p className="text-yellow-800">dengan <span className="font-bold">{insight.lowestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
-                                        </div>
-                                        {insight.lowDemandHighWageJob && (
-                                            <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl shadow-md border border-green-300">
-                                                <p className="font-semibold text-green-900 mb-0.5">Potensi Gaji Tinggi:</p>
-                                                <p className="text-green-900 text-2xl font-extrabold leading-tight">"{insight.lowDemandHighWageJob.jabatan}"</p>
-                                                <p className="text-green-800">di kategori <span className="font-bold">{insight.lowDemandHighWageJob.wageCategories}</span> ({insight.lowDemandHighWageJob.peminat.toLocaleString('id-ID')} peminat)</p>
+                            {/* MODIFIKASI DIMULAI DI SINI */}
+                            <div
+                                className="lg:col-span-3 flex flex-col bg-white p-6 rounded-lg shadow-lg" // Background dan padding di div luar
+                            >
+                                <div // Ini adalah konten yang akan menjadi sticky
+                                    className="lg:sticky lg:top-5" // sticky hanya di lg: breakpoint, top 20px
+                                    style={{
+                                        // Hapus height: fit-content dan maxHeight di sini karena background sudah full
+                                        // Juga hapus overflowY di sini, karena scrollbar akan dikendalikan oleh parent grid jika diperlukan
+                                        alignSelf: 'flex-start', // Tetap pertahankan ini agar konten tidak meregang
+                                        zIndex: 1 // Pastikan di atas konten yang di scroll jika ada
+                                    }}
+                                >
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                        <Lightbulb className="mr-2 h-6 w-6 text-yellow-500" />
+                                        Insight Pasar
+                                    </h3>
+                                    {insight ? (
+                                        <div className="w-full space-y-4 text-sm">
+                                            <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-md border border-blue-300">
+                                                <p className="font-semibold text-blue-900 mb-0.5">Paling Diminati:</p>
+                                                <p className="text-blue-900 text-2xl font-extrabold leading-tight">"{insight.highestDemandJob?.jabatan}"</p>
+                                                <p className="text-blue-800">dengan <span className="font-bold">{insight.highestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
                                             </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <p className="text-gray-500 flex-grow p-4 text-center">Data tidak cukup untuk menghasilkan insight.</p>
-                                )}
+                                            <div className="p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl shadow-md border border-yellow-300">
+                                                <p className="font-semibold text-yellow-900 mb-0.5">Peluang Tersembunyi:</p>
+                                                <p className="text-yellow-900 text-2xl font-extrabold leading-tight">"{insight.lowestDemandJob?.jabatan}"</p>
+                                                <p className="text-yellow-800">dengan <span className="font-bold">{insight.lowestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
+                                            </div>
+                                            {insight.lowDemandHighWageJob && (
+                                                <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl shadow-md border border-green-300">
+                                                    <p className="font-semibold text-green-900 mb-0.5">Potensi Gaji Tinggi:</p>
+                                                    <p className="text-green-900 text-2xl font-extrabold leading-tight">"{insight.lowDemandHighWageJob.jabatan}"</p>
+                                                    <p className="text-green-800">di kategori <span className="font-bold">{insight.lowDemandHighWageJob.wageCategories}</span> ({insight.lowDemandHighWageJob.peminat.toLocaleString('id-ID')} peminat)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500 p-4 text-center">Data tidak cukup untuk menghasilkan insight.</p>
+                                    )}
+                                </div>
                             </div>
+                            {/* MODIFIKASI BERAKHIR DI SINI */}
 
                             {/* Area Visualisasi Utama (Kolom Tengah - Lebih Lebar, order normal) */}
                             <div className="lg:col-span-6 flex flex-col gap-4">
@@ -1100,8 +1164,8 @@ const MainFeature = () => {
                                     insight={insight}
                                     totalPeminatSektor={totalPeminatSektor}
                                     totalPeminatSektorForOtherEdu={totalPeminatSektorForOtherEdu}
-                                    totalPeminatSektorByWage={totalPeminatSektorByWage}
                                     percentageByWage={percentageByWage}
+                                    totalPeminatSektorByWage={totalPeminatSektorByWage}
                                     totalPeminatSektorByWageForOtherEdu={totalPeminatSektorByWageForOtherEdu}
                                     percentageByWageForOtherEdu={percentageByWageForOtherEdu}
                                     averageAgeData={averageAgeData}

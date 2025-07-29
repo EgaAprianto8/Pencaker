@@ -1,10 +1,20 @@
 import React from 'react'
-import MainFeature from './components/main-feature-page/Main-Feature'
+import HeroSection from './layouts/hero-section'
+import SectorCategorySection from './components/landing-page/sector-categori-section'
+import JumlahPendudukChart from './components/landing-page/jumlah-penduduk'
+import PersentasePengangguranChart from './components/landing-page/persentase-pengangguran-chart'
+import PencakerPenempatanChart from './components/landing-page/pencaker-penempatan-chart'
+import TasikDataIntro from './components/landing-page/tasik-data-intro'
 
 const page = () => {
   return (
     <div>
-      <MainFeature/>
+      <HeroSection/>
+      <TasikDataIntro/>
+      <JumlahPendudukChart/>
+      <PersentasePengangguranChart/>
+      <PencakerPenempatanChart/>
+      <SectorCategorySection/>
     </div>
   )
 }

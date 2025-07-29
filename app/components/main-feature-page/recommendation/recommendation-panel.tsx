@@ -6,7 +6,8 @@
 import React, { useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Bot } from 'lucide-react';
+import { Bot } from 'lucide-react'; // Icon Bot tetap bisa digunakan, atau diganti jika ada icon lain yang lebih cocok untuk "Assistant"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"; // Import komponen Card
 
 // Definitions (Anda mungkin perlu memindahkan ini ke file types.ts jika banyak digunakan di berbagai komponen)
 interface SektorJabatanMapItem {
@@ -97,12 +98,16 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
 }) => {
 
     // --- Definisi Variasi Kalimat ---
+    // Nama untuk AI Asisten, bisa "Karier Assistant", "Pencari Kerja Assistant", "Job Insight Assistant", dll.
+    // Saya sarankan "Karier Assistant" karena lebih umum dan mencakup lebih banyak aspek.
+    const assistantName = "Karier Assistant"; 
+
     const greetingPhrases = [
-        "Halo! Saya adalah AI Asisten Anda. Berdasarkan data profil dan filter yang Anda pilih",
-        "Selamat datang! Sebagai AI Asisten Anda, saya telah menganalisis data berdasarkan preferensi Anda",
-        "Hai! Dengan informasi yang Anda berikan (filter dan profil Anda), saya, AI Asisten Anda, telah melakukan analisis",
-        "Salam! Berbekal filter dan data profil Anda, saya sebagai AI Asisten, siap memberikan insight",
-        "Halo! Saya, AI Asisten Anda, telah merangkum informasi penting berdasarkan pilihan filter Anda"
+        `Halo! Saya adalah ${assistantName} Anda. Berdasarkan data profil dan filter yang Anda pilih`,
+        `Selamat datang! Sebagai ${assistantName} Anda, saya telah menganalisis data berdasarkan preferensi Anda`,
+        `Hai! Dengan informasi yang Anda berikan (filter dan profil Anda), saya, ${assistantName} Anda, telah melakukan analisis`,
+        `Salam! Berbekal filter dan data profil Anda, saya sebagai ${assistantName}, siap memberikan insight`,
+        `Halo! Saya, ${assistantName} Anda, telah merangkum informasi penting berdasarkan pilihan filter Anda`
     ];
 
     const specificJobPhrases = [
@@ -162,6 +167,14 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
             `Berinteraksi dengan profesional di industri ini dapat membuka pintu peluang baru.`
         ]
     };
+
+    // Ini adalah array untuk "Tips" yang akan di-render dalam list
+    const generalTipsList = [ // Nama variabel diubah untuk menghindari konflik dengan yang sebelumnya (jika masih ada)
+        "Kembangkan Keterampilan: Fokus pada keterampilan yang paling dicari untuk jabatan ini.",
+        "Jelajahi Peluang: Cari tahu lebih banyak tentang perusahaan yang sering merekrut posisi ini.",
+        "Perluas Jaringan: Berinteraksi dengan profesional di bidang ini untuk insight lebih lanjut.",
+        "Tinjau Profil Anda: Pastikan profil Anda menyoroti pengalaman dan kualifikasi yang relevan."
+    ];
 
     const getRandomPhrase = (phrases: string[] | ((...args: any[]) => string)[]) => {
         return phrases[Math.floor(Math.random() * phrases.length)];
@@ -404,39 +417,23 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
 
         recommendedJob.adviceText = selectedAdvice;
 
-
-        const narasiHTML = `
-            <p class="mb-4 text-gray-700">${(getRandomPhrase(greetingPhrases) as string)} (Sektor: <span class="font-bold text-blue-700">${currentSectorFormatted}</span>, Lulusan: <span class="font-bold text-blue-700">${currentPendidikanFormatted}</span>, Gaji: <span class="font-bold text-blue-700">${currentGajiFormatted}</span>), saya telah menganalisis data untuk menemukan **rekomendasi jabatan terbaik** untuk Anda.</p>
-            <div class="p-4 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-xl shadow-lg border border-indigo-300 mb-6 flex flex-col items-center text-center">
-                <p class="text-indigo-900 text-sm font-semibold mb-2">${selectedJabatanAI === 'all' ? 'Pilihan Terbaik Saya Untuk Anda:' : 'Jabatan yang Anda pilih:'}</p>
-                <p class="text-indigo-900 text-3xl md:text-4xl font-extrabold leading-tight">"${recommendedJob.name}"</p>
-                <p class="text-md md:text-lg text-indigo-800 mt-2">${recommendedJob.reason}</p>
-            </div>
-            <p class="mt-4 text-gray-800 font-semibold">Saran Tambahan dari AI:</p>
-            <p class="text-gray-600 text-sm mb-4">${recommendedJob.adviceText}</p>
-            <ul class="list-disc list-inside space-y-1 text-gray-600 text-sm">
-                <li><span class="font-semibold">Kembangkan Keterampilan:</span> Fokus pada keterampilan yang paling dicari untuk jabatan ini.</li>
-                <li><span class="font-semibold">Jelajahi Peluang:</span> Cari tahu lebih banyak tentang perusahaan yang sering merekrut posisi ini.</li>
-                <li><span class="font-semibold">Perluas Jaringan:</span> Berinteraksi dengan profesional di bidang ini untuk insight lebih lanjut.</li>
-                <li><span class="font-semibold">Tinjau Profil Anda:</span> Pastikan profil Anda menyoroti pengalaman dan kualifikasi yang relevan.</li>
-            </ul>
-        `;
-
-        return narasiHTML;
+        return recommendedJob; // Mengembalikan objek, bukan HTML string
     }, [
         insight, selectedSector, selectedPendidikan, selectedGaji,
         jobDemandData, jobWageDemandData,
         historicalChartData, selectedJabatanForTrend, selectedJabatanAI, availableJabatanForAI
     ]);
 
+    const { name: recommendedJobName, reason: recommendedJobReason, adviceText: recommendedJobAdvice } = generateStrongestRecommendation;
+
     return (
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col h-full">
             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <Bot className="mr-2 h-6 w-6 text-indigo-500" />
-                Narasi & Rekomendasi AI
+                 Karier Assistant
             </h3>
             <div className="mb-4">
-                <Label htmlFor="jabatan-ai-filter" className="font-semibold mb-1 text-gray-700 text-sm">Pilih Jabatan untuk Detail AI</Label>
+                <Label htmlFor="jabatan-ai-filter" className="font-semibold mb-1 text-gray-700 text-sm">Pilih Jabatan untuk Detail Karier Assistant</Label>
                 <Select
                     onValueChange={onSelectJabatanAI}
                     value={selectedJabatanAI}
@@ -462,7 +459,40 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
                 </Select>
             </div>
             <div className="flex-grow overflow-y-auto pr-2 text-justify text-sm leading-relaxed">
-                <div dangerouslySetInnerHTML={{ __html: generateStrongestRecommendation }} />
+                <p className="mb-4 text-gray-700" dangerouslySetInnerHTML={{ __html: (getRandomPhrase(greetingPhrases) as string) + ` (Sektor: <span class="font-bold text-blue-700">${selectedSector || 'Tidak Ditentukan'}</span>, Lulusan: <span class="font-bold text-blue-700">${selectedPendidikan === 'all' ? 'Semua Tingkat' : selectedPendidikan || 'Tidak Ditentukan'}</span>, Gaji: <span class="font-bold text-blue-700">${selectedGaji === 'all' ? 'Semua Rentang' : selectedGaji || 'Tidak Ditentukan'}</span>), saya telah menganalisis data untuk menemukan rekomendasi jabatan terbaik untuk Anda.` }} />
+                
+                {/* Card untuk Rekomendasi Utama */}
+                <Card className="bg-gradient-to-br from-indigo-100 to-indigo-200 border-indigo-300 mb-6">
+                    <CardHeader>
+                        <CardDescription className="text-indigo-900 text-sm font-semibold">
+                            {selectedJabatanAI === 'all' ? 'Pilihan Terbaik Saya Untuk Anda:' : 'Jabatan yang Anda pilih:'}
+                        </CardDescription>
+                        <CardTitle className="text-indigo-900 text-3xl md:text-3xl font-extrabold leading-tight">
+                        &quot;{recommendedJobName}&quot;
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-md md:text-lg text-indigo-800" dangerouslySetInnerHTML={{ __html: recommendedJobReason }} />
+                </Card>
+
+                {/* Card untuk Saran Tambahan dari Karier Assistant */}
+                <Card className="mb-6">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold text-gray-800">Saran {assistantName}:</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-gray-600 text-sm" dangerouslySetInnerHTML={{ __html: recommendedJobAdvice }} />
+                    </CardContent>
+                </Card>
+
+                {/* Bagian Tips yang dikembalikan ke bentuk <ul> */}
+                <h4 className="mt-4 text-gray-800 font-semibold mb-2">Tips untuk Pengembangan Karier Anda:</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
+                    {generalTipsList.map((tip, index) => (
+                        <li key={index}>
+                            <span dangerouslySetInnerHTML={{ __html: tip }} />
+                        </li>
+                    ))}
+                </ul>
             </div>
         </div>
     );
