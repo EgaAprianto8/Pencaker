@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FiSearch, FiChevronLeft, FiChevronRight, FiUser, FiBriefcase, FiMapPin, FiCalendar, FiAward, FiTag, FiRotateCcw, FiChevronsRight, FiTrendingUp, FiTarget, FiDollarSign, FiZap, FiEye, FiBarChart2, FiSliders } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList, PieChart, Pie } from 'recharts';
-import { Lightbulb, Users, CalendarDays } from 'lucide-react';
+import { Lightbulb, Users, CalendarDays, DollarSign, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Label } from "@/components/ui/label";
 
 // Import useSearchParams
@@ -20,6 +21,7 @@ import { sektorJabatanMap, sektorOptions } from './sektor-jabatan-map';
 import HistoricalJobDemandChart from './historical-wage-trend-chart';
 import RecommendationPanel from './recommendation/recommendation-panel';
 import JobSeekerTable from './jobseektertable';
+import StepWizardForm from './stepwizardform';
 
 // Definitions (pastikan ini tetap di MainFeature atau dipindahkan ke file terpisah dan diimpor)
 interface SektorJabatanMapItem {
@@ -298,7 +300,12 @@ const JobVisualization = ({
     };
 
     return (
-        <div className="flex flex-col gap-4">
+        <motion.div
+            className="flex flex-col gap-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ staggerChildren: 0.15 }}
+        >
             <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-center">
                 <h2 className="text-xl font-semibold">
                     Analisis Peminat di Sektor <span className="text-blue-700">{selectedSector}</span>
@@ -309,7 +316,10 @@ const JobVisualization = ({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Total Peminat Sektor */}
-                <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-4 rounded-lg shadow-xl text-center">
+                <motion.div
+                    whileHover={{ scale: 1.03 }}
+                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 rounded-xl shadow-xl text-center"
+                >
                     <Users className="h-8 w-8 mx-auto mb-2 opacity-80" />
                     <p className="font-bold">Total Peminat Sektor</p>
                     <div className="mt-1">
@@ -326,7 +336,7 @@ const JobVisualization = ({
                             </>
                         )}
                     </div>
-                </div>
+                </motion.div>
 
                 {/* Peminat dengan Upah */}
                 <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-4 rounded-lg shadow-xl text-center">
@@ -369,7 +379,12 @@ const JobVisualization = ({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            >
                 <div className="bg-white p-6 rounded-lg shadow-lg">
                     <h4 className="font-semibold text-center mb-2">
                         Peminat Sektor Berdasarkan Jenis Kelamin
@@ -545,8 +560,8 @@ const JobVisualization = ({
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     );
 };
 
@@ -562,7 +577,7 @@ const MainFeature = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const itemsPerPage = 10;
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(1);
     const [selectedPendidikan, setSelectedPendidikan] = useState<string>('');
     const [selectedSector, setSelectedSector] = useState<string>('');
     const [selectedGaji, setSelectedGaji] = useState<string>('');
@@ -709,7 +724,7 @@ const MainFeature = () => {
     };
 
     const handleResetSearch = () => {
-        setStep(0);
+        setStep(1);
         setSelectedSector('');
         setSelectedPendidikan('');
         setSelectedGaji('');
@@ -720,73 +735,41 @@ const MainFeature = () => {
     };
 
     const renderStepContent = () => {
-        switch (step) {
-            case 0:
-                return (
-                    <div className="text-center py-6">
-                        <p className="text-gray-600 mb-4">Tidak menemukan yang Anda cari? Coba pencarian langkah-demi-langkah untuk melihat insight pasar kerja.</p>
-                        <Button onClick={() => setStep(1)} size="lg">
-                            <FiSearch className="mr-2" /> Mulai Pencarian Terpandu
-                        </Button>
-                    </div>
-                );
-            case 1:
-                return (
-                    <div>
-                        <h3 className="font-semibold mb-2">Langkah 1: Sektor Pekerjaan</h3>
-                        <Select onValueChange={(value: string) => { setSelectedSector(value); setSelectedPendidikan(''); setSelectedGaji(''); setShowOtherEduComparison(false); setSelectedJabatanAI('all'); }} value={selectedSector}>
-                            <SelectTrigger><SelectValue placeholder="Pilih sektor..." /></SelectTrigger>
-                            <SelectContent>{sektorOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
-                        </Select>
-                    </div>
-                );
-            case 2:
-                return (
-                    <div>
-                        <h3 className="font-semibold mb-2">Langkah 2: Lulusan Terakhir</h3>
-                        <Select onValueChange={(value: string) => { setSelectedPendidikan(value); setSelectedGaji(''); setShowOtherEduComparison(false); setSelectedJabatanAI('all'); }} value={selectedPendidikan}>
-                            <SelectTrigger><SelectValue placeholder="Pilih pendidikan..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem
-                                    value="all"
-                                    className={selectedPendidikan === 'all' ? 'font-bold' : ''}
-                                >
-                                    Semua Tingkat Pendidikan
-                                </SelectItem>
-                                {filteredPendidikanOptions.length > 0 ? (
-                                    filteredPendidikanOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)
-                                ) : (
-                                    <SelectItem value="" disabled>Pilih sektor terlebih dahulu</SelectItem>
-                                )}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                );
-            case 3:
-                return (
-                    <div>
-                        <h3 className="font-semibold mb-2">Langkah 3: Rentang Gaji</h3>
-                        <Select onValueChange={(value: string) => { setSelectedGaji(value); setShowOtherEduComparison(false); setSelectedJabatanAI('all'); }} value={selectedGaji}>
-                            <SelectTrigger><SelectValue placeholder="Pilih rentang gaji..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem
-                                    value="all"
-                                    className={selectedGaji === 'all' ? 'font-bold' : ''}
-                                >
-                                    Semua Rentang Gaji
-                                </SelectItem>
-                                {filteredGajiOptions.length > 0 ? (
-                                    filteredGajiOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)
-                                ) : (
-                                    <SelectItem value="" disabled>Pilih sektor & pendidikan terlebih dahulu</SelectItem>
-                                )}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                );
-            default: return null;
-        }
-    };
+        return (
+          <StepWizardForm
+            step={step}
+            selectedSector={selectedSector}
+            selectedPendidikan={selectedPendidikan}
+            selectedGaji={selectedGaji}
+            filteredPendidikanOptions={filteredPendidikanOptions}
+            filteredGajiOptions={filteredGajiOptions}
+            onSectorChange={(value) => {
+              setSelectedSector(value);
+              setSelectedPendidikan('');
+              setSelectedGaji('');
+              setShowOtherEduComparison(false);
+            }}
+            onPendidikanChange={(value) => {
+              setSelectedPendidikan(value);
+              setSelectedGaji('');
+              setShowOtherEduComparison(false);
+            }}
+            onGajiChange={(value) => {
+              setSelectedGaji(value);
+              setShowOtherEduComparison(false);
+            }}
+            onNextStep={() => {
+              if (step === 3) {
+                setStep(4);
+              } else {
+                setStep(prev => prev + 1);
+              }
+            }}
+            onReset={handleResetSearch}
+            sektorOptions={sektorOptions}
+          />
+        );
+      };
 
     const isNextButtonDisabled = useMemo(() => {
         if (step === 0) return false;
@@ -1001,25 +984,9 @@ const MainFeature = () => {
 
             <hr className="my-12" />
 
-            <div className="p-6 border rounded-lg shadow-md bg-gray-50">
-                <div className="flex justify-between items-start">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Pencarian Terpandu & Visualisasi</h2>
-                    {step > 0 && (
-                        <Button onClick={handleResetSearch} variant="outline" size="sm">
-                            <FiRotateCcw className="mr-2" /> Ulangi
-                        </Button>
-                    )}
-                </div>
+            <div className="p-6">
 
                 {step < 4 && renderStepContent()}
-
-                {step > 0 && step < 4 && (
-                    <div className="flex justify-end pt-4">
-                        <Button onClick={handleNextStep} disabled={isNextButtonDisabled}>
-                            {step === 3 ? 'Tampilkan Hasil & Insight' : 'Lanjutkan'} <FiChevronsRight className="ml-2" />
-                        </Button>
-                    </div>
-                )}
 
                 {step === 4 && (
                     <div>

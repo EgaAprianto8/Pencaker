@@ -7,7 +7,10 @@ import { MapPin, BarChart, Lightbulb, Users } from 'lucide-react';
 
 const TasikDataIntro: React.FC = () => {
     return (
-        <section className="relative py-24 px-4 bg-gradient-to-r from-teal-50 to-blue-100 overflow-hidden">
+        <section
+        id="tentang-kami"
+        className="relative py-24 px-4 bg-gradient-to-r from-teal-50 to-blue-100 overflow-hidden scroll-mt-20"
+        >
             {/* Background decorative elements for visual appeal */}
             <div className="absolute top-0 left-0 w-64 h-64 bg-purple-200 opacity-30 rounded-full mix-blend-multiply filter blur-3xl animate-blob -z-10"></div>
             <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-pink-200 opacity-30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000 -z-10"></div>

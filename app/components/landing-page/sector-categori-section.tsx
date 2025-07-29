@@ -299,7 +299,7 @@ const SectorCategorySection: React.FC = () => {
         gaji: wageRange,
       }).toString();
 
-      router.push(`/main-feature?${params}`);
+      router.push(`/analisis-pasar-kerja?${params}`);
     } else {
       alert("Terjadi kesalahan, pilihan tidak lengkap. Mohon ulangi dari awal.");
       handleBack(); 
