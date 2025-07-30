@@ -19,10 +19,8 @@ type DataItem = {
     UPAH_DIINGINKAN: string;
     JABATAN_DIINGINKAN: string;
     WILAYAH_DIINGINKAN: string;
-    WILAYAH_DIINGINKAN_DETAIL: string;
-    UMUR_SAAT_DAFTAR: string;
     JABATAN_DIINGINKAN_Normalized: string;
-    wilayah_diinginkan_detail_normalized: string;
+    UMUR_SAAT_DAFTAR: string;
     keterampilan_cleaned: string;
 };
 
@@ -91,8 +89,8 @@ const JobSeekerTable: React.FC<JobSeekerTableProps> = ({
                             <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiBriefcase className="mr-2 inline-block text-green-500" />Pendidikan</TableHead>
                             <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiAward className="mr-2 inline-block text-yellow-500" />Keterampilan</TableHead>
                             <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiTag className="mr-2 inline-block text-purple-500" />Jabatan & Upah</TableHead>
-                            <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiMapPin className="mr-2 inline-block text-red-500" />Lokasi</TableHead>
-                            <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiCalendar className="mr-2 inline-block text-teal-500" />Tanggal Penting</TableHead>
+                            <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiMapPin className="mr-2 inline-block text-red-500" />Lokasi Daftar</TableHead>
+                            <TableHead className="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiCalendar className="mr-2 inline-block text-teal-500" />Tanggal Daftar</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody className="divide-y divide-gray-100">
@@ -120,12 +118,10 @@ const JobSeekerTable: React.FC<JobSeekerTableProps> = ({
                                         <div className="text-sm text-gray-500">{cleanData(item.UPAH_DIINGINKAN)}</div>
                                     </TableCell>
                                     <TableCell className="py-3 px-4">
-                                        <div className="font-medium text-gray-800 capitalize">{cleanData(item.WILAYAH_DIINGINKAN_DETAIL)}</div>
                                         <div className="text-sm text-gray-500 capitalize">{cleanData(item.KECAMATAN)}</div>
                                     </TableCell>
                                     <TableCell className="py-3 px-4">
-                                        <div className="text-sm text-gray-500">Daftar: {cleanData(item.TANGGAL_DAFTAR)}</div>
-                                        <div className="text-sm text-gray-500">Lahir: {cleanData(item.TGL_LAHIR)}</div>
+                                        <div className="text-sm text-gray-500">{cleanData(item.TANGGAL_DAFTAR)}</div>
                                     </TableCell>
                                 </TableRow>
                             ))
