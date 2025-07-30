@@ -40,20 +40,19 @@ const PersentasePengangguranChart: React.FC = () => {
         <div className="w-full lg:w-3/5 h-80 sm:h-[450px] md:h-[500px] p-2 sm:p-4 flex items-center justify-center order-first lg:order-last">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-            <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            outerRadius={outerRadius}
-            innerRadius={innerRadius}
-            dataKey="value"
-            labelLine={false}        // 👈 remove the line
-            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                outerRadius={outerRadius}
+                innerRadius={innerRadius}
+                dataKey="value"
+                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(1)}%)`}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
               <Tooltip
                 formatter={(v: number) => `${v.toFixed(2)}%`}
                 wrapperStyle={{ borderRadius: '8px', boxShadow: '0 6px 16px rgba(0,0,0,0.15)' }}
