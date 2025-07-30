@@ -17,13 +17,18 @@ const TasikDataIntro: React.FC = () => {
             <div className="absolute top-1/2 left-[10%] w-48 h-48 bg-yellow-200 opacity-30 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000 -z-10"></div>
 
             <div className="relative max-w-7xl mx-auto text-center z-10">
-                <h2 className="text-6xl font-extrabold text-gray-900 mb-8 leading-tight animate-fade-in-up">
-                    <span className="block text-indigo-700">Mengenal Lebih Dekat</span>
-                    <span className="block mt-2">Dinamika Ketenagakerjaan Kota Tasikmalaya</span>
-                </h2>
-                <p className="text-xl text-gray-700 mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-300">
-                    Selamat datang di TasikKerja, platform inovatif yang dirancang untuk memberikan wawasan mendalam tentang pasar kerja di Kota Tasikmalaya. Kami hadir untuk membantu Anda melihat peluang, memahami persaingan, dan membuat keputusan karier yang lebih cerdas.
-                </p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6 md:mb-8 leading-tight animate-fade-in-up">
+                <span className="block text-indigo-700 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
+                    Mengenal Lebih Dekat
+                </span>
+                <span className="block mt-1 sm:mt-2">
+                    Dinamika Ketenagakerjaan Kota Tasikmalaya
+                </span>
+            </h2>
+
+            <p className="text-base sm:text-lg md:text-xl text-gray-700 mb-8 sm:mb-10 md:mb-12 max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-300">
+                Selamat datang di TasikKerja, platform inovatif yang dirancang untuk memberikan wawasan mendalam tentang pasar kerja di Kota Tasikmalaya. Kami hadir untuk membantu Anda melihat peluang, memahami persaingan, dan membuat keputusan karier yang lebih cerdas.
+            </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transform hover:scale-105 transition-transform duration-300 ease-in-out flex flex-col items-center animate-fade-in-up animation-delay-500">

@@ -1,71 +1,67 @@
 'use client';
 
-import React from 'react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
-import { BookOpen, UserMinus, Lightbulb } from 'lucide-react'; // Import icons tambahan
+import React, { useEffect, useState } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BookOpen } from 'lucide-react';
 
-const data = [
-  { "Uraian": "SD ke Bawah", "Laki-laki": 30.34, "Perempuan": 19.31, "Total": 26.76 },
-  { "Uraian": "SMP", "Laki-laki": 8.47, "Perempuan": 11.77, "Total": 9.54 },
-  { "Uraian": "SMA Umum", "Laki-laki": 21.07, "Perempuan": 26.03, "Total": 22.68 },
-  { "Uraian": "SMK Kejuruan", "Laki-laki": 31.41, "Perempuan": 35.38, "Total": 32.70 },
-  { "Uraian": "DI/II/III/Universitas", "Laki-laki": 8.72, "Perempuan": 7.50, "Total": 8.32 },
-  { "Uraian": "Jumlah", "Laki-laki": 100.0, "Perempuan": 100.0, "Total": 100.0 }
+const raw = [
+  { Uraian: "SD ke Bawah", Laki: 30.34, Perempuan: 19.31, Total: 26.76 },
+  { Uraian: "SMP", Laki: 8.47, Perempuan: 11.77, Total: 9.54 },
+  { Uraian: "SMA Umum", Laki: 21.07, Perempuan: 26.03, Total: 22.68 },
+  { Uraian: "SMK Kejuruan", Laki: 31.41, Perempuan: 35.38, Total: 32.70 },
+  { Uraian: "DI/II/III/Universitas", Laki: 8.72, Perempuan: 7.50, Total: 8.32 },
+  { Uraian: "Jumlah", Laki: 100, Perempuan: 100, Total: 100 }
 ];
 
 const COLORS = ['#6366F1', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
+const chartData = raw.filter(i => i.Uraian !== "Jumlah").map(i => ({ name: i.Uraian, value: i.Total }));
 
 const PersentasePengangguranChart: React.FC = () => {
-  const chartData = data
-    .filter(item => item.Uraian !== "Jumlah")
-    .map(item => ({
-      name: item.Uraian,
-      value: item.Total,
-    }));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const outerRadius = isMobile ? 110 : 160;
+  const innerRadius = isMobile ? 50 : 80;
 
   return (
-    <section className="relative py-16 px-4 bg-[#f6f6ff] overflow-hidden">
-      {/* Colorful div patterns */}
-      <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob -z-10 animation-delay-1000"></div>
-      <div className="absolute top-0 right-1/4 w-36 h-36 bg-yellow-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-3000 -z-10"></div>
-      <div className="absolute top-1/2 right-0 w-32 h-32 bg-blue-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob -z-10"></div>
+    <section className="relative py-12 sm:py-16 px-4 bg-[#f6f6ff] overflow-hidden">
+      <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-40 sm:h-40 bg-pink-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-1000 -z-10"></div>
+      <div className="absolute top-0 right-1/4 w-28 h-28 sm:w-36 sm:h-36 bg-yellow-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-3000 -z-10"></div>
+      <div className="absolute top-1/2 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-blue-300 opacity-20 rounded-full mix-blend-multiply filter blur-xl animate-blob -z-10"></div>
 
-      <div className="relative flex flex-col lg:flex-row items-center justify-center max-w-6xl mx-auto gap-12 z-10">
-        {/* Chart Section - dipindahkan ke bagian atas secara visual */}
-        <div className="w-full lg:w-3/5 h-[500px] p-2 flex items-center justify-center order-first lg:order-last z-0"> {/* Tambahkan order-first / order-last */}
+      <div className="relative flex flex-col-reverse lg:flex-row items-center justify-center max-w-6xl mx-auto gap-8 md:gap-12 z-10">
+        {/* Chart */}
+        <div className="w-full lg:w-3/5 h-80 sm:h-[450px] md:h-[500px] p-2 sm:p-4 flex items-center justify-center order-first lg:order-last">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
             <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              outerRadius={160}
-              innerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-              labelLine={true}
-              label={({ name, percent }) => `${name} (${(percent * 100).toFixed(1)}%)`}
-            >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            outerRadius={outerRadius}
+            innerRadius={innerRadius}
+            dataKey="value"
+            labelLine={false}        // 👈 remove the line
+            label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
               <Tooltip
-                formatter={(value: number) => `${value.toFixed(2)}%`}
+                formatter={(v: number) => `${v.toFixed(2)}%`}
                 wrapperStyle={{ borderRadius: '8px', boxShadow: '0 6px 16px rgba(0,0,0,0.15)' }}
-                contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.98)', border: 'none', borderRadius: '8px', padding: '12px' }}
-                labelStyle={{ fontWeight: 'bold', color: '#333', marginBottom: '5px', fontSize: '16px' }}
-                itemStyle={{ color: '#555', fontSize: '14px' }}
+                contentStyle={{ backgroundColor: 'rgba(255,255,255,0.98)', border: 'none', borderRadius: '8px', padding: '12px' }}
+                labelStyle={{ fontWeight: 'bold', color: '#333' }}
               />
               <Legend
-                wrapperStyle={{ paddingTop: '25px', fontSize: '15px' }}
+                wrapperStyle={{ paddingTop: '20px', fontSize: '14px' }}
                 iconType="circle"
                 layout="horizontal"
                 align="center"
@@ -74,31 +70,23 @@ const PersentasePengangguranChart: React.FC = () => {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        {/* Text Explanation Section - dibuat poin-poin dengan ikon */}
+
+        {/* Narrative */}
         <div className="w-full lg:w-2/5 p-4 text-center lg:text-left">
-          <h3 className="text-4xl font-extrabold text-gray-800 mb-6 flex items-center lg:justify-start justify-center">
-           Tingkat Pendidikan Pengangguran
-          </h3>
-          <ul className="space-y-4 text-gray-700 text-lg">
-            <li className="flex items-start lg:items-center">
-              <BookOpen className="mr-3 mt-1 lg:mt-0 text-blue-600 flex-shrink-0" size={28} />
-              <span>
-                Visualisasi ini menampilkan distribusi persentase pengangguran di Kota Tasikmalaya berdasarkan tingkat pendidikan.
-              </span>
-            </li>
-            <li className="flex items-start lg:items-center">
-              <UserMinus className="mr-3 mt-1 lg:mt-0 text-red-600 flex-shrink-0" size={28} />
-              <span>
-                Setiap segmen pada pie chart merepresentasikan kontribusi total dari setiap jenjang pendidikan terhadap keseluruhan angka pengangguran.
-              </span>
-            </li>
-            <li className="flex items-start lg:items-center">
-              <Lightbulb className="mr-3 mt-1 lg:mt-0 text-yellow-600 flex-shrink-0" size={28} />
-              <span>
-                Membantu Anda untuk mengidentifikasi dengan cepat tingkat pendidikan mana yang memiliki persentase pengangguran tertinggi.
-              </span>
-            </li>
-          </ul>
+          <div className="flex flex-col items-center lg:items-start mb-6">
+            <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-100 to-indigo-200 shadow-lg mb-4">
+              <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
+            </div>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 leading-tight">
+              Tingkat Pendidikan Pengangguran
+            </h3>
+          </div>
+          <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
+            Mayoritas pengangguran di Kota Tasikmalaya berasal dari <strong>lulusan SMK Kejuruan (32,7%)</strong>, diikuti <strong>SD ke bawah (26,8%)</strong> dan <strong>SMA Umum (22,7%)</strong>. Ini menunjukkan bahwa jenjang pendidikan tertentu berkontribusi besar pada angka pengangguran.
+          </p>
+          <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed">
+            Visualisasi ini menjadi <strong>titik awal strategis</strong> untuk menyelaraskan <strong>kurikulum, pelatihan, dan kebijakan keterampilan</strong> dengan kebutuhan industri lokal, agar lulusan lebih mudah terserap pasar kerja.
+          </p>
         </div>
       </div>
     </section>

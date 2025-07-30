@@ -2,6 +2,7 @@
 'use client'; // Direktif ini tetap diperlukan karena ada animasi yang berjalan di sisi klien
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 const HeroSection = () => {
   return (
@@ -25,9 +26,11 @@ const HeroSection = () => {
             <span className="block text-indigo-200 mt-2">Dengan Analisis Pasar Kerja Tasikmalaya</span>
           </h1>
           {/* Tombol dengan gaya yang lebih menarik dan efek hover */}
+          <Link href={'/analisis-pasar-kerja'}>
           <button className="px-8 py-3 bg-[#07377f] text-white font-semibold text-xl sm:text-2xl rounded-lg shadow-xl hover:bg-[#19212e] transition duration-300 transform hover:scale-105 animate-fade-in-up animation-delay-300">
             Lihat Analisis Pasar Kerja
           </button>
+          </Link>
         </div>
 
         {/* Konten Gambar - di kanan pada layar besar, di bawah pada mobile */}

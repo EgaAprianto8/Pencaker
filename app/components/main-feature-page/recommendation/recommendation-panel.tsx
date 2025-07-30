@@ -467,7 +467,7 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
                         <CardDescription className="text-indigo-900 text-sm font-semibold">
                             {selectedJabatanAI === 'all' ? 'Pilihan Terbaik Saya Untuk Anda:' : 'Jabatan yang Anda pilih:'}
                         </CardDescription>
-                        <CardTitle className="text-indigo-900 text-3xl md:text-3xl font-extrabold leading-tight">
+                        <CardTitle className="text-indigo-900 text-2xl lg:text-3xl md:text-2xl font-extrabold leading-tight">
                         &quot;{recommendedJobName}&quot;
                         </CardTitle>
                     </CardHeader>
@@ -487,13 +487,13 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
                 {/* Bagian Tips yang dikembalikan ke bentuk <ul> */}
                 <h4 className="mt-4 text-gray-800 font-semibold mb-2">Tips untuk Pengembangan Karier Anda:</h4>
                 <ul className="space-y-3 text-gray-800">
-  {generalTipsList.map((tip, index) => (
-    <li key={index} className="flex items-start">
-      <span className="shrink-0 w-1 h-1 mt-2 mr-1 rounded-full bg-gray-800" />
-      <span dangerouslySetInnerHTML={{ __html: tip }} />
-    </li>
-  ))}
-</ul>
+                {generalTipsList.map((tip, index) => (
+                    <li key={index} className="flex items-start">
+                    <span className="shrink-0 w-1 h-1 mt-2 mr-1 rounded-full bg-gray-800" />
+                    <span dangerouslySetInnerHTML={{ __html: tip }} />
+                    </li>
+                ))}
+                </ul>
             </div>
         </div>
     );
