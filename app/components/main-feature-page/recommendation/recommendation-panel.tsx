@@ -486,13 +486,14 @@ const RecommendationPanel: React.FC<RecommendationPanelProps> = ({
 
                 {/* Bagian Tips yang dikembalikan ke bentuk <ul> */}
                 <h4 className="mt-4 text-gray-800 font-semibold mb-2">Tips untuk Pengembangan Karier Anda:</h4>
-                <ul className="list-disc list-inside space-y-1 text-gray-600 text-sm">
-                    {generalTipsList.map((tip, index) => (
-                        <li key={index}>
-                            <span dangerouslySetInnerHTML={{ __html: tip }} />
-                        </li>
-                    ))}
-                </ul>
+                <ul className="space-y-3 text-gray-800">
+  {generalTipsList.map((tip, index) => (
+    <li key={index} className="flex items-start">
+      <span className="shrink-0 w-1 h-1 mt-2 mr-1 rounded-full bg-gray-800" />
+      <span dangerouslySetInnerHTML={{ __html: tip }} />
+    </li>
+  ))}
+</ul>
             </div>
         </div>
     );

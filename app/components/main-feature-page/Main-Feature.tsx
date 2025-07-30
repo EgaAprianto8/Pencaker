@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -22,6 +21,7 @@ import HistoricalJobDemandChart from './historical-wage-trend-chart';
 import RecommendationPanel from './recommendation/recommendation-panel';
 import JobSeekerTable from './jobseektertable';
 import StepWizardForm from './stepwizardform';
+import { InsightCard } from './main-feature-components/insight-card';
 
 // Definitions (pastikan ini tetap di MainFeature atau dipindahkan ke file terpisah dan diimpor)
 interface SektorJabatanMapItem {
@@ -315,78 +315,126 @@ const JobVisualization = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ staggerChildren: 0.15 }}
         >
-            <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg text-center">
-                <h2 className="text-xl font-semibold">
-                    Analisis Peminat di Sektor <span className="text-blue-700">{selectedSector}</span>
-                    {selectedPendidikan && selectedPendidikan !== 'all' && <> Lulusan <span className="text-blue-700">{selectedPendidikan}</span></>}
-                    {selectedGaji !== 'all' && <> dengan Upah <span className="text-blue-700">{selectedGaji}</span></>}
-                </h2>
-            </div>
+        <motion.div
+        className="bg-gradient-to-r from-blue-50 via-white to-blue-50 border border-blue-200 rounded-2xl p-5 text-center shadow-sm"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        >
+        <div className="inline-flex items-center space-x-3">
+            <motion.div
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}
+            >
+            <FiBarChart2 className="w-6 h-6 text-blue-600" />
+            </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h2 className="text-lg md:text-xl font-semibold text-blue-900">
+            Analisis Peminat di Sektor
+            <span className="text-gray-800 font-bold"> {selectedSector}</span>
+            {selectedPendidikan && selectedPendidikan !== 'all' && (
+                <>
+                {' '}
+                <span className="text-gray-500">•</span>{' '}
+                <span className="text-blue-700 font-medium">Lulusan {selectedPendidikan}</span>
+                </>
+            )}
+            {selectedGaji !== 'all' && (
+                <>
+                {' '}
+                <span className="text-gray-500">•</span>{' '}
+                <span className="text-blue-700 font-medium">Upah {selectedGaji}</span>
+                </>
+            )}
+            </h2>
+        </div>
+        </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {/* Total Peminat Sektor */}
                 <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-5 rounded-xl shadow-xl text-center"
+                    className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+                    whileHover={{ y: -4 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
                 >
-                    <Users className="h-8 w-8 mx-auto mb-2 opacity-80" />
-                    <p className="font-bold">Total Peminat Sektor</p>
-                    <div className="mt-1">
-                        <p className="text-sm opacity-90">Lulusan {selectedPendidikan === 'all' ? 'Semua' : selectedPendidikan}</p>
-                        <p className="text-3xl font-bold">{totalPeminatSektor.toLocaleString('id-ID')}</p>
-                        {selectedPendidikan !== 'all' && (
-                            <>
-                                <hr className="my-1 border-blue-300" />
-                                <p className="text-sm opacity-90">Lulusan Lain</p>
-                                <p className="text-3xl font-bold">{totalPeminatSektorForOtherEdu.toLocaleString('id-ID')}</p>
-                                {totalPeminatSektorForOtherEdu > 0 && (
-                                    <p className="text-sm opacity-90">({percentageByWageForOtherEdu.toFixed(1)}%)</p>
-                                )}
-                            </>
-                        )}
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4">
+                    <div className="flex items-center space-x-3">
+                        <Users className="w-6 h-6 text-white/90" />
+                        <span className="text-white font-semibold text-sm">Total Peminat Sektor</span>
+                    </div>
+                    </div>
+                    <div className="p-4 space-y-1">
+                    <p className="text-3xl font-bold text-gray-800">
+                        {totalPeminatSektor.toLocaleString('id-ID')}
+                    </p>
+                    <p className="text-sm text-gray-800">Lulusan {selectedPendidikan === 'all' ? 'Semua' : selectedPendidikan}</p>
+                    {selectedPendidikan !== 'all' && (
+                        <div className="pt-2 border-t border-gray-100">
+                        <p className="text-xl font-semibold text-gray-800">
+                            {totalPeminatSektorForOtherEdu.toLocaleString('id-ID')}
+                        </p>
+                        <p className="text-xs text-gray-800">Lulusan Lain • {percentageByWageForOtherEdu.toFixed(1)}%</p>
+                        </div>
+                    )}
                     </div>
                 </motion.div>
 
                 {/* Peminat dengan Upah */}
-                <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-4 rounded-lg shadow-xl text-center">
-                    <FiDollarSign className="h-8 w-8 mx-auto mb-2 opacity-80" />
-                    <p className="font-bold">Peminat dengan Upah</p>
-                    <div className="mt-1">
-                        <p className="text-sm opacity-90">{selectedGaji === 'all' ? 'Semua Rentang' : selectedGaji}</p>
-                        <p className="text-3xl font-bold">{totalPeminatSektorByWage.toLocaleString('id-ID')}</p>
-                        {totalPeminatSektor > 0 && (
-                            <p className="text-sm opacity-90">({percentageByWage.toFixed(1)}%)</p>
-                        )}
-                        {selectedPendidikan !== 'all' && (
-                            <>
-                                <hr className="my-1 border-purple-300" />
-                                <p className="text-sm opacity-90">Lulusan Lain</p>
-                                <p className="text-3xl font-bold">{totalPeminatSektorByWageForOtherEdu.toLocaleString('id-ID')}</p>
-                                {totalPeminatSektorForOtherEdu > 0 && (
-                                    <p className="text-sm opacity-90">({percentageByWageForOtherEdu.toFixed(1)}%)</p>
-                                )}
-                            </>
-                        )}
+                <motion.div
+                    className="bg-white rounded-2xl shadow-lg border border-purple-100 overflow-hidden"
+                    whileHover={{ y: -4 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                >
+                    <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-4">
+                    <div className="flex items-center space-x-3">
+                        <FiDollarSign className="w-6 h-6 text-white/90" />
+                        <span className="text-white font-semibold text-sm">Peminat dengan Upah</span>
                     </div>
-                </div>
+                    </div>
+                    <div className="p-4 space-y-1">
+                    <p className="text-3xl font-bold text-gray-800">
+                        {totalPeminatSektorByWage.toLocaleString('id-ID')}
+                    </p>
+                    <p className="text-sm text-gray-800">{selectedGaji === 'all' ? 'Semua Rentang' : selectedGaji}</p>
+                    {totalPeminatSektor > 0 && (
+                        <p className="text-xs text-gray-800">{percentageByWage.toFixed(1)}% dari total lulusan</p>
+                    )}
+                    {selectedPendidikan !== 'all' && (
+                        <div className="pt-2 border-t border-gray-100">
+                        <p className="text-xl font-semibold text-gray-800">
+                            {totalPeminatSektorByWageForOtherEdu.toLocaleString('id-ID')}
+                        </p>
+                        <p className="text-xs text-gray-800">Lulusan Lain • {percentageByWageForOtherEdu.toFixed(1)}%</p>
+                        </div>
+                    )}
+                    </div>
+                </motion.div>
 
                 {/* Rata-rata Umur */}
-                <div className="bg-gradient-to-br from-green-500 to-green-700 text-white p-4 rounded-lg shadow-xl text-center">
-                    <CalendarDays className="h-8 w-8 mx-auto mb-2 opacity-80" />
-                    <p className="font-bold">Rata-rata Umur Peminat</p>
-                    <div className="mt-1">
-                        <p className="text-sm opacity-90">Lulusan {selectedPendidikan === 'all' ? 'Semua' : selectedPendidikan}</p>
-                        <p className="text-3xl font-bold">{averageAgeData.average} Thn</p>
-                        {selectedPendidikan !== 'all' && (
-                            <>
-                                <hr className="my-1 border-green-300" />
-                                <p className="text-sm opacity-90">Lulusan Lain</p>
-                                <p className="text-3xl font-bold">{averageAgeDataForOtherEdu.average} Thn</p>
-                            </>
-                        )}
+                <motion.div
+                    className="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden"
+                    whileHover={{ y: -4 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                >
+                    <div className="bg-gradient-to-r from-green-600 to-green-800 p-4">
+                    <div className="flex items-center space-x-3">
+                        <CalendarDays className="w-6 h-6 text-white/90" />
+                        <span className="text-white font-semibold text-sm">Rata-rata Umur</span>
                     </div>
+                    </div>
+                    <div className="p-4 space-y-1">
+                    <p className="text-3xl font-bold text-gray-800">{averageAgeData.average} <span className="text-lg">Thn</span></p>
+                    <p className="text-sm text-gray-800">Lulusan {selectedPendidikan === 'all' ? 'Semua' : selectedPendidikan}</p>
+                    {selectedPendidikan !== 'all' && (
+                        <div className="pt-2 border-t border-gray-100">
+                        <p className="text-xl font-semibold text-gray-800">{averageAgeDataForOtherEdu.average} <span className="text-sm">Thn</span></p>
+                        <p className="text-xs text-gray-800">Lulusan Lain</p>
+                        </div>
+                    )}
+                    </div>
+                </motion.div>
                 </div>
-            </div>
 
             <motion.div
             className="grid grid-cols-1 md:grid-cols-3 gap-5"
@@ -394,181 +442,280 @@ const JobVisualization = ({
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             >
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                    <h4 className="font-semibold text-center mb-2">
-                        Peminat Sektor Berdasarkan Jenis Kelamin
-                    </h4>
-                    <ResponsiveContainer width="100%" height={280}>
-                        <PieChart>
-                            <Pie
-                                data={genderData}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80} // Disesuaikan agar label tidak terlalu dekat dengan tepi
-                                labelLine={false} // Tidak menampilkan garis dari label ke irisan
-                            >
-                                {genderData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                                ))}
-                                <LabelList
-                                    dataKey="percentage" // Menggunakan dataKey 'percentage'
-                                    position="inside" // Menempatkan label di dalam irisan
-                                    formatter={(value: number) => `${value.toFixed(1)}%`} // Format sebagai persentase
-                                    fill="#fff" // Warna teks label putih untuk kontras
-                                    fontSize={12} // Ukuran font
-                                    // Offset untuk mencegah teks terlalu dekat ke tengah
-                                    dy={0}
-                                    className="pointer-events-none" // Mencegah interaksi mouse dengan label
-                                />
-                            </Pie>
-                            <Tooltip formatter={(value, name) => [`${value} orang`, name]} />
-                            <Legend
-                                verticalAlign="bottom"
-                                height={36}
-                                iconType="circle"
-                                formatter={(value, entry) => (
-                                    <span style={{ color: '#333' }}>{value}</span>
-                                )}
-                            />
-                        </PieChart>
-                    </ResponsiveContainer>
+            <motion.div
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            >
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-white px-5 py-3 border-b border-gray-100">
+                <div className="flex items-center space-x-2">
+                <h4 className="text-base text-center font-semibold text-gray-800">
+                    Peminat Sektor Berdasarkan Jenis Kelamin
+                </h4>
                 </div>
+            </div>
+
+            {/* Chart */}
+            <div className="p-4">
+                <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                    <Pie
+                    data={genderData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}  // Donut effect
+                    outerRadius={85}
+                    paddingAngle={2}
+                    >
+                    {genderData.map((entry, index) => (
+                        <Cell
+                        key={`cell-${index}`}
+                        fill={PIE_COLORS[index % PIE_COLORS.length]}
+                        className="focus:outline-none hover:opacity-80 transition-opacity"
+                        />
+                    ))}
+                    <LabelList
+                        dataKey="percentage"
+                        position="inside"
+                        formatter={(val: number) => `${val.toFixed(0)}%`}
+                        fill="#fff"
+                        fontSize={13}
+                        fontWeight={600}
+                        className="pointer-events-none"
+                    />
+                    </Pie>
+
+                    <Tooltip
+                    cursor={{ fill: 'transparent' }}
+                    contentStyle={{
+                        backgroundColor: '#fff',
+                        border: 'none',
+                        borderRadius: '0.75rem',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+                    }}
+                    formatter={(value, name) => [`${value} orang`, name]}
+                    />
+
+                    <Legend
+                    verticalAlign="bottom"
+                    height={40}
+                    iconType="circle"
+                    iconSize={10}
+                    wrapperStyle={{ fontSize: 13, color: '#4b5563' }}
+                    formatter={(value) => <span className="text-gray-700">{value}</span>}
+                    />
+                </PieChart>
+                </ResponsiveContainer>
+            </div>
+            </motion.div>
 
                 {/* MODIFIKASI CHART "Jabatan Berdasarkan Peminat" MENJADI STACKED BAR */}
-                <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-2 relative">
-                    <h4 className="font-semibold text-left mb-2">Jabatan Berdasarkan Peminat</h4>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden md:col-span-2">
+                {/* Header: Judul + Button */}
+                <div className="flex items-center justify-between px-5 py-3 border-b bg-gradient-to-r from-blue-50 to-white">
+                    <h4 className="text-base font-semibold text-gray-800 truncate pr-2">
+                    Jabatan Berdasarkan Peminat
+                    </h4>
+
                     {selectedPendidikan && selectedPendidikan !== 'all' && (
-                        <div className="absolute top-4 right-4 z-10">
-                            <Button onClick={() => setShowOtherEduComparison(prev => !prev)} variant="outline" size="sm">
-                                {showOtherEduComparison ? 'Sembunyikan' : 'Bandingkan Lulusan Lain'}
-                                <FiEye className="ml-1" />
-                            </Button>
-                        </div>
+                    <Button
+                        onClick={() => setShowOtherEduComparison(prev => !prev)}
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 text-xs"
+                    >
+                        {showOtherEduComparison ? 'Sembunyikan' : 'Bandingkan'}
+                        <FiEye className="ml-1 w-3 h-3" />
+                    </Button>
                     )}
-                    {/* Tambahkan div dengan overflowX: 'auto' untuk scroll */}
-                    <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '20px' }}>
-                        {/* Legenda Kustom dengan posisi sticky untuk Jabatan Berdasarkan Peminat */}
-                        {(selectedPendidikan !== 'all') && ( // Hanya tampilkan jika pendidikan spesifik dipilih
-                            <div
-                                style={{
-                                    position: 'sticky',
-                                    left: 0,
-                                    top: 0,
-                                    zIndex: 10,
-                                    backgroundColor: 'white',
-                                    padding: '10px 0',
-                                    width: '100%',
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'center',
-                                    gap: '15px',
-                                    borderBottom: '1px solid #eee',
-                                    marginBottom: '10px',
-                                }}
-                            >
-                                {chartKeys.map((key, index) => (
-                                    <div key={key} className="flex items-center">
-                                        <span
-                                            className="inline-block w-3 h-3 rounded-full mr-2"
-                                            style={{ backgroundColor: EDUCATION_COLORS[key] || STACKED_BAR_COLORS[index % STACKED_BAR_COLORS.length] }}
-                                        ></span>
-                                        <span className="text-sm text-gray-700">
-                                            {key === selectedPendidikan ? selectedPendidikan : 'Lulusan Lain'}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <ResponsiveContainer width={Math.max(combinedJobDemandData.length * 70, 400)} height={300}>
-                            <BarChart data={combinedJobDemandData} margin={{ top: 20, right: 30, left: 0, bottom: 50 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="jabatan" tick={{ fontSize: 10 }} interval={0} angle={-45} textAnchor="end" height={60} />
-                                <YAxis />
-                                <Tooltip formatter={(value: number, name?: string) => [`${value.toLocaleString('id-ID')} Peminat`, name || '']} />
-                                {/* Menghapus Legend bawaan Recharts di sini */}
+                </div>
 
-                                {chartKeys.map((key, index) => (
-                                    <Bar
-                                        key={key}
-                                        dataKey={key}
-                                        stackId={selectedPendidikan !== 'all' ? "a" : undefined}
-                                        fill={selectedPendidikan === 'all' ? CHART_COLORS[index % CHART_COLORS.length] : EDUCATION_COLORS[key]}
-                                        name={selectedPendidikan === 'all' ? 'Total Peminat' : key}
-                                    >
-                                        {!showOtherEduComparison && selectedPendidikan === 'all' && (
-                                            <LabelList dataKey="peminat" position="top" formatter={(value: number) => value.toLocaleString('id-ID')} />
-                                        )}
-                                    </Bar>
-                                ))}
-                                {combinedJobDemandData.length === 0 && (
-                                    <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fill="#666" fontSize="14">
-                                        Tidak ada data yang tersedia untuk kombinasi filter ini.
-                                    </text>
-                                )}
-                            </BarChart>
-                        </ResponsiveContainer>
+                {/* Legend sticky */}
+                {(selectedPendidikan !== 'all') && (
+                    <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-4 py-2">
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-xs">
+                        {chartKeys.map((key, idx) => (
+                        <div key={key} className="flex items-center">
+                            <span
+                            className="w-2.5 h-2.5 rounded-full mr-1.5"
+                            style={{
+                                backgroundColor:
+                                EDUCATION_COLORS[key] || STACKED_BAR_COLORS[idx % STACKED_BAR_COLORS.length],
+                            }}
+                            />
+                            <span className="text-gray-700">
+                            {key === selectedPendidikan ? selectedPendidikan : 'Lulusan Lain'}
+                            </span>
+                        </div>
+                        ))}
                     </div>
+                    </div>
+                )}
+
+                {/* Chart container */}
+                <div className="overflow-x-auto pb-4">
+                    <ResponsiveContainer
+                    width={Math.max(combinedJobDemandData.length * 70, 400)}
+                    height={300}
+                    >
+                    <BarChart
+                        data={combinedJobDemandData}
+                        margin={{ top: 15, right: 20, left: 0, bottom: 50 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                        <XAxis
+                        dataKey="jabatan"
+                        tick={{ fontSize: 11 }}
+                        interval={0}
+                        angle={-45}
+                        textAnchor="end"
+                        height={70}
+                        />
+                        <YAxis tick={{ fontSize: 11 }} />
+                        <Tooltip
+                        cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                        contentStyle={{
+                            backgroundColor: '#fff',
+                            border: 'none',
+                            borderRadius: '0.75rem',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            fontSize: 12,
+                        }}
+                        formatter={(v: number, name) => [`${v.toLocaleString('id-ID')} peminat`, name]}
+                        />
+
+                        {chartKeys.map((key, idx) => (
+                        <Bar
+                            key={key}
+                            dataKey={key}
+                            stackId={selectedPendidikan !== 'all' ? 'a' : undefined}
+                            fill={EDUCATION_COLORS[key] || CHART_COLORS[idx]}
+                            radius={selectedPendidikan !== 'all' ? 0 : [4, 4, 0, 0]}
+                        >
+                            {!showOtherEduComparison && selectedPendidikan === 'all' && (
+                            <LabelList
+                                dataKey="peminat"
+                                position="top"
+                                formatter={(v: number) => v.toLocaleString('id-ID')}
+                                fontSize={10}
+                            />
+                            )}
+                        </Bar>
+                        ))}
+
+                        {combinedJobDemandData.length === 0 && (
+                        <text
+                            x="50%"
+                            y="50%"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
+                            fill="#9ca3af"
+                            fontSize={13}
+                        >
+                            Tidak ada data
+                        </text>
+                        )}
+                    </BarChart>
+                    </ResponsiveContainer>
+                </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-lg md:col-span-3">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">Peminat Gaji Berdasarkan Jabatan</h3>
-                    {jobWageDemandData.length > 0 && hasNonZeroDataForGroupedChart ? (
-                        <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '20px' }}>
-                            {/* Legenda Kustom dengan posisi sticky */}
-                            <div
-                                style={{
-                                    position: 'sticky',
-                                    left: 0,
-                                    top: 0,
-                                    zIndex: 10,
-                                    backgroundColor: 'white',
-                                    padding: '10px 0',
-                                    width: '100%',
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'center',
-                                    gap: '15px',
-                                    borderBottom: '1px solid #eee',
-                                    marginBottom: '10px',
-                                }}
-                            >
-                                {sortedGajiOptions.map((wageCategory, index) => (
-                                    <div key={wageCategory} className="flex items-center">
-                                        <span
-                                            className="inline-block w-3 h-3 rounded-full mr-2"
-                                            style={{ backgroundColor: WAGE_CATEGORY_COLORS[wageCategory] || CHART_COLORS[index % CHART_COLORS.length] }}
-                                        ></span>
-                                        <span className="text-sm text-gray-700">{wageCategory}</span>
-                                    </div>
-                                ))}
-                            </div>
+                <motion.div
+  className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden md:col-span-3"
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  {/* Header */}
+  <div className="bg-gradient-to-r from-blue-50 to-white px-5 py-3 border-b border-gray-100">
+    <h3 className="text-lg md:text-xl font-semibold text-gray-800 text-center">
+      Peminat Gaji Berdasarkan Jabatan
+    </h3>
+  </div>
 
-                            <ResponsiveContainer width={chartDynamicWidth} minWidth="100%" height={400}>
-                                <BarChart data={jobWageDemandData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="name" interval={0} angle={-45} textAnchor="end" height={100} />
-                                    <YAxis label={{ value: 'Jumlah Peminat', angle: -90, position: 'insideLeft' }} />
-                                    <Tooltip formatter={(value: number, name?: string) => [`${value.toLocaleString('id-ID')} Peminat`, name || '']} />
-                                    {/* Menghapus Legend bawaan Recharts */}
-                                    {sortedGajiOptions.map((wageCategory, index) => (
-                                        <Bar
-                                            key={wageCategory}
-                                            dataKey={wageCategory}
-                                            fill={WAGE_CATEGORY_COLORS[wageCategory] || CHART_COLORS[index % CHART_COLORS.length]}
-                                            name={wageCategory}
-                                        />
-                                    ))}
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    ) : (
-                        <div className="h-64 flex items-center justify-center text-gray-500">
-                            Tidak ada data gaji yang tersedia.
-                        </div>
-                    )}
-                </div>
+  {jobWageDemandData.length > 0 && hasNonZeroDataForGroupedChart ? (
+    <div className="w-full">
+      {/* Legend sticky */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100 px-4 py-2">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
+          {sortedGajiOptions.map((cat, idx) => (
+            <div key={cat} className="flex items-center">
+              <span
+                className="w-2.5 h-2.5 rounded-full mr-1.5"
+                style={{
+                  backgroundColor:
+                    WAGE_CATEGORY_COLORS[cat] || CHART_COLORS[idx % CHART_COLORS.length],
+                }}
+              />
+              <span className="text-gray-700">{cat}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="overflow-x-auto pb-4">
+        <ResponsiveContainer
+          width={chartDynamicWidth}
+          minWidth="100%"
+          height={400}
+        >
+          <BarChart
+            data={jobWageDemandData}
+            margin={{ top: 40, right: 20, left: 10, bottom: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+            <XAxis
+              dataKey="name"
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              height={80}
+              tick={{ fontSize: 11 }}
+            />
+            <YAxis
+              label={{
+                value: 'Jumlah Peminat',
+                angle: -90,
+                position: 'insideLeft',
+                fontSize: 12,
+              }}
+              tick={{ fontSize: 11 }}
+            />
+            <Tooltip
+              cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+              contentStyle={{
+                backgroundColor: '#fff',
+                border: 'none',
+                borderRadius: '0.75rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                fontSize: 12,
+              }}
+              formatter={(v: number, name) => [`${v.toLocaleString('id-ID')} peminat`, name]}
+            />
+
+            {sortedGajiOptions.map((cat, idx) => (
+              <Bar
+                key={cat}
+                dataKey={cat}
+                fill={WAGE_CATEGORY_COLORS[cat] || CHART_COLORS[idx % CHART_COLORS.length]}
+                radius={[4, 4, 0, 0]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  ) : (
+    <div className="h-64 flex items-center justify-center text-gray-500 text-sm">
+      Tidak ada data gaji yang tersedia.
+    </div>
+  )}
+</motion.div>
             </motion.div>
         </motion.div>
     );
@@ -1131,42 +1278,54 @@ const MainFeature = () => {
                             <div
                                 className="lg:col-span-3 flex flex-col bg-white p-6 rounded-lg shadow-lg" // Background dan padding di div luar
                             >
-                                <div // Ini adalah konten yang akan menjadi sticky
-                                    className="lg:sticky lg:top-5" // sticky hanya di lg: breakpoint, top 20px
-                                    style={{
-                                        alignSelf: 'flex-start', // Tetap pertahankan ini agar konten tidak meregang
-                                        zIndex: 1 // Pastikan di atas konten yang di scroll jika ada
-                                    }}
+                                <motion.div // Ini adalah konten yang akan menjadi sticky
+                                     className=""
+                                     initial={{ opacity: 0 }}
+                                     animate={{ opacity: 1 }}
+                                     transition={{ duration: 0.5 }}
                                 >
                                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                        <Lightbulb className="mr-2 h-6 w-6 text-yellow-500" />
-                                        Insight Pasar
+                                    <motion.div
+                                        initial={{ rotate: -15 }}
+                                        animate={{ rotate: 0 }}
+                                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                                    >
+                                        <Lightbulb className="w-5 h-5 mr-2 text-blue-600" />
+                                    </motion.div>
+                                    Insight Pasar
                                     </h3>
+
                                     {insight ? (
-                                        <div className="w-full space-y-4 text-sm">
-                                            <div className="p-3 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl shadow-md border border-blue-300">
-                                                <p className="font-semibold text-blue-900 mb-0.5">Paling Diminati:</p>
-                                                <p className="text-blue-900 text-2xl font-extrabold leading-tight">"{insight.highestDemandJob?.jabatan}"</p>
-                                                <p className="text-blue-800">dengan <span className="font-bold">{insight.highestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
-                                            </div>
-                                            <div className="p-3 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl shadow-md border border-yellow-300">
-                                                <p className="font-semibold text-yellow-900 mb-0.5">Peluang Tersembunyi:</p>
-                                                <p className="text-yellow-900 text-2xl font-extrabold leading-tight">"{insight.lowestDemandJob?.jabatan}"</p>
-                                                <p className="text-yellow-800">dengan <span className="font-bold">{insight.lowestDemandJob?.peminat.toLocaleString('id-ID')}</span> peminat</p>
-                                            </div>
-                                            {insight.lowDemandHighWageJob && (
-                                                <div className="p-3 bg-gradient-to-br from-green-100 to-green-200 rounded-xl shadow-md border border-green-300">
-                                                    <p className="font-semibold text-green-900 mb-0.5">Potensi Gaji Tinggi:</p>
-                                                    <p className="text-green-900 text-2xl font-extrabold leading-tight">"{insight.lowDemandHighWageJob.jabatan}"</p>
-                                                    <p className="text-green-800">di kategori <span className="font-bold">{insight.lowDemandHighWageJob.wageCategories}</span> ({insight.lowDemandHighWageJob.peminat.toLocaleString('id-ID')} peminat)</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                    <div className="space-y-3">
+                                        <InsightCard
+                                        icon={<TrendingUp className="w-4 h-4" />}
+                                        label="Paling Diminati"
+                                        value={`"${insight.highestDemandJob?.jabatan}"`}
+                                        subtext={`${insight.highestDemandJob?.peminat.toLocaleString('id-ID')} peminat`}
+                                        colorClass="from-blue-600 to-blue-800"
+                                        />
+                                        <InsightCard
+                                        icon={<Zap className="w-4 h-4" />}
+                                        label="Peluang Tersembunyi"
+                                        value={`"${insight.lowestDemandJob?.jabatan}"`}
+                                        subtext={`${insight.lowestDemandJob?.peminat.toLocaleString('id-ID')} peminat`}
+                                        colorClass="from-slate-500 to-slate-700"
+                                        />
+                                        {insight.lowDemandHighWageJob && (
+                                        <InsightCard
+                                            icon={<DollarSign className="w-4 h-4" />}
+                                            label="Potensi Gaji Tinggi"
+                                            value={`"${insight.lowDemandHighWageJob.jabatan}"`}
+                                            subtext={`${insight.lowDemandHighWageJob.wageCategories} • ${insight.lowDemandHighWageJob.peminat.toLocaleString('id-ID')} peminat`}
+                                            colorClass="from-emerald-500 to-emerald-700"
+                                        />
+                                        )}
+                                    </div>
                                     ) : (
-                                        <p className="text-gray-500 p-4 text-center">Data tidak cukup untuk menghasilkan insight.</p>
+                                    <p className="text-sm text-gray-500 text-center py-6">Data tidak cukup untuk menghasilkan insight.</p>
                                     )}
+                                </motion.div>
                                 </div>
-                            </div>
                             {/* MODIFIKASI BERAKHIR DI SINI */}
 
                             {/* Area Visualisasi Utama (Kolom Tengah - Lebih Lebar, order normal) */}
