@@ -371,14 +371,15 @@ const SectorCategorySection: React.FC = () => {
               <p className="text-lg text-gray-700 mb-8 max-w-2xl z-10">
                 Dapatkan <span className="text-purple-700 font-semibold">insight pasar kerja</span> terkini, analisis <span className="text-red-700 font-semibold">pesaing</span>, dan potensi <span className="text-green-700 font-semibold">gaji</span> yang relevan dengan kualifikasi Anda.
               </p>
+
               <button
-                onClick={() => setCurrentStep(0)} // Mulai tahapan ke step 0
+                onClick={() => router.push('/analisis-pasar-kerja#step-wizard')}
                 className="
                   group relative 
-                  bg-gradient-to-r from-[#6366F1] to-[#3F51B5] hover:from-[#3F51B5] hover:to-[#6366F1] // Gradien ungu/biru yang menarik
+                  bg-gradient-to-r from-[#6366F1] to-[#3F51B5] hover:from-[#3F51B5] hover:to-[#6366F1]
                   text-white font-bold py-3 px-8 rounded-full shadow-lg 
                   transition-all duration-300 flex items-center gap-2 
-                  overflow-hidden transform hover:scale-105 z-10 // Efek scale pada hover
+                  overflow-hidden transform hover:scale-105 z-10
                 "
               >
                 Mulai Analisis Sekarang! 
@@ -387,6 +388,7 @@ const SectorCategorySection: React.FC = () => {
                 </span>
                 <span className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shine"></span>
               </button>
+              
             </div>
           ) : (
             <> {/* Tampilkan konten langkah-langkah jika currentStep bukan -1 */}

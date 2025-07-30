@@ -53,7 +53,7 @@ const Navbar = () => {
         className="fixed top-0 left-0 right-0 z-50 h-20 border-b border-sky-700/50"
         style={{
           backgroundColor: 'rgba(1, 64, 148, 0.85)',
-          backdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(12px)',
         }}
       >
         <div className="container mx-auto flex justify-between items-center h-full px-4">

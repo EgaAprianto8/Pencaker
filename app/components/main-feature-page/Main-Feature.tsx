@@ -3,14 +3,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FiSearch, FiChevronLeft, FiChevronRight, FiUser, FiBriefcase, FiMapPin, FiCalendar, FiAward, FiTag, FiRotateCcw, FiChevronsRight, FiTrendingUp, FiTarget, FiDollarSign, FiZap, FiEye, FiBarChart2, FiSliders } from 'react-icons/fi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell, LabelList, PieChart, Pie } from 'recharts';
-import { Lightbulb, Users, CalendarDays, DollarSign, TrendingUp } from 'lucide-react';
+import { Lightbulb, Users, CalendarDays, DollarSign, TrendingUp, Zap, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Label } from "@/components/ui/label";
 
@@ -69,7 +69,15 @@ type ProcessedJobData = {
     jabatan: string;
     peminat: number;
 };
-
+const cardVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { staggerChildren: 0.1 } },
+  };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 },
+  };
 interface InsightResult {
     highestDemandJob: ProcessedJobData;
     lowestDemandJob: ProcessedJobData;
@@ -298,6 +306,7 @@ const JobVisualization = ({
         'Lulusan Lain': STACKED_BAR_COLORS[1], // Warna untuk lulusan lain
         'peminat': CHART_COLORS[0] // Warna default jika 'all' pendidikan
     };
+
 
     return (
         <motion.div
@@ -593,6 +602,48 @@ const MainFeature = () => {
     // State baru untuk dropdown jabatan di panel AI
     const [selectedJabatanAI, setSelectedJabatanAI] = useState<string>('all');
 
+    const stepWizardRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const hash = window.location.hash;
+            if (hash === '#step-wizard') {
+                // Force reset ke step 1 agar StepWizardForm tampil
+                setStep(1);
+                setSelectedSector('');
+                setSelectedPendidikan('');
+                setSelectedGaji('');
+    
+                // Scroll setelah DOM siap
+                setTimeout(() => {
+                    const target = document.getElementById('step-wizard');
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                        });
+                    }
+                }, 300); // Tambahan delay untuk memastikan render selesai
+            }
+        }
+    }, []); // Jalankan sekali saat mount
+
+    useEffect(() => {
+        if (step < 4 && typeof window !== 'undefined') {
+            const hash = window.location.hash;
+            if (hash === '#step-wizard') {
+                setTimeout(() => {
+                    const target = document.getElementById('step-wizard');
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                        });
+                    }
+                }, 100);
+            }
+        }
+    }, [step]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -982,11 +1033,15 @@ const MainFeature = () => {
 
 
 
-            <hr className="my-12" />
+            <hr id="step-wizard" className="my-12" />
 
             <div className="p-6">
 
-                {step < 4 && renderStepContent()}
+                {step < 4 && (
+                <div ref={stepWizardRef}>
+                    {renderStepContent()}
+                </div>
+                )}
 
                 {step === 4 && (
                     <div>
@@ -1079,8 +1134,6 @@ const MainFeature = () => {
                                 <div // Ini adalah konten yang akan menjadi sticky
                                     className="lg:sticky lg:top-5" // sticky hanya di lg: breakpoint, top 20px
                                     style={{
-                                        // Hapus height: fit-content dan maxHeight di sini karena background sudah full
-                                        // Juga hapus overflowY di sini, karena scrollbar akan dikendalikan oleh parent grid jika diperlukan
                                         alignSelf: 'flex-start', // Tetap pertahankan ini agar konten tidak meregang
                                         zIndex: 1 // Pastikan di atas konten yang di scroll jika ada
                                     }}

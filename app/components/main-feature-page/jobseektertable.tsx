@@ -58,7 +58,7 @@ const JobSeekerTable: React.FC<JobSeekerTableProps> = ({
             {/* Bagian Judul dan Deskripsi Halaman */}
             <div className="text-center mb-8 pt-8">
                 <h1 className="text-5xl font-extrabold text-gray-900 mb-4 animate-fadeIn">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Data Pencari Kerja</span>
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">Data Pencari Kerja</span>
                 </h1>
                 <p className="text-lg text-gray-700 max-w-2xl mx-auto animate-slideUp">
                     Daftar lengkap data pencari kerja, dilengkapi dengan detail profil, pendidikan, keterampilan, dan preferensi.
