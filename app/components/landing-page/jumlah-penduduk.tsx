@@ -66,6 +66,9 @@ const JumlahPenduduk: React.FC = () => {
               </tbody>
             </table>
           </div>
+          <div className='mt-2 text-sm'>
+          Sumber: Badan Pusat Statistik, Survei Angkatan Kerja Nasional (Sakernas) Agustus
+          </div>
         </div>
 
         {/* Narrative Section */}
@@ -85,6 +88,7 @@ const JumlahPenduduk: React.FC = () => {
             Kelompok <strong>bukan angkatan kerja</strong>—pelajar, pengurus rumah tangga, lainnya—masih menjadi bagian besar dari populasi usia kerja. Data ini menjadi dasar penting untuk memahami dinamika pasar kerja dan merancang kebijakan ketenagakerjaan yang lebih tepat sasaran.
           </p>
         </div>
+        
       </div>
     </section>
   );

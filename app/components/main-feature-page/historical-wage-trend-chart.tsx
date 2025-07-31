@@ -358,6 +358,7 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
     const jabValues = forecastSlice.map(row => row[topJob.name] || 0);
     const forecastMonths = forecastSlice.map(row => row.name);
 
+    
     const getTopJobInsight = () => {
         const total = topJob.total;
         const maxVal = Math.max(...jabValues);

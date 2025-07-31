@@ -41,9 +41,9 @@ const IntroductionSection: React.FC = () => {
   return (
     <div className="relative w-full overflow-hidden">
       {/* Lapisan background (gambar + gradien) */}
-      <div className="absolute inset-0 -z-20">
+      <div className="absolute inset-0  -z-20">
         <Image
-          src="/image/building.jpg"
+          src="/image/building.png"
           alt="Building"
           fill
           priority
@@ -96,7 +96,7 @@ const IntroductionSection: React.FC = () => {
                   {[
                     'Jelajahi profil lengkap pencari kerja, mulai dari latar belakang pendidikan hingga keterampilan dan preferensi upah.',
                     'Sajikan data kompleks menjadi grafik yang mudah dipahami, bantu Anda melihat tren dan pola dengan cepat.',
-                    'Dapatkan rekomendasi berharga untuk keputusan terkait rekrutmen atau pengembangan karir berdasarkan data riil.',
+                    'Dapatkan rekomendasi berharga untuk keputusan terkait rekrutmen atau pengembangan karier berdasarkan data riil.',
                   ][i]}
                 </p>
               </motion.div>

@@ -48,8 +48,8 @@ const TasikDataIntro: React.FC = () => {
                     </div>
                     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transform hover:scale-105 transition-transform duration-300 ease-in-out flex flex-col items-center animate-fade-in-up animation-delay-1100">
                         <Users className="text-purple-600 mb-4" size={48} strokeWidth={1.5} />
-                        <h4 className="text-2xl font-bold text-gray-800 mb-2">Untuk Pencaker & Perusahaan</h4>
-                        <p className="text-gray-600 text-center">Bermanfaat bagi pencari kerja maupun pihak yang ingin rekrutmen.</p>
+                        <h4 className="text-2xl font-bold text-gray-800 mb-2">Untuk Pencari Kerja</h4>
+                        <p className="text-gray-600 text-center">Bermanfaat bagi pencari kerja</p>
                     </div>
                 </div>
 

@@ -366,7 +366,7 @@ const SectorCategorySection: React.FC = () => {
               <DollarSign size={40} className="absolute bottom-[10%] left-[30%] text-yellow-300 opacity-60 transition-transform duration-300 ease-in-out" style={{ animationDelay: '0.5s' }} />
 
               <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-6 z-10">
-                Ingin tahu lebih dalam tentang <span className="text-blue-700">peluang karir</span> Anda?
+                Ingin tahu lebih dalam tentang <span className="text-blue-700">peluang karier</span> Anda?
               </h2>
               <p className="text-lg text-gray-700 mb-8 max-w-2xl z-10">
                 Dapatkan <span className="text-purple-700 font-semibold">insight pasar kerja</span> terkini, analisis <span className="text-red-700 font-semibold">pesaing</span>, dan potensi <span className="text-green-700 font-semibold">gaji</span> yang relevan dengan kualifikasi Anda.

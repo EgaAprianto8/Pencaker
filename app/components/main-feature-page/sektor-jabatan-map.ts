@@ -43,7 +43,7 @@
     { sektor: "Lainnya", jabatan: [
         "informasi dan komunikasi", "real estate", "aktivitas penyewaan dan sewa guna tanpa hak opsi, ketenagakerjaan, agen perjalanan, dan penunjang usaha lainnya",
         "aktivitas rumah tangga sebagai pemberi kerja", "aktivitas badan internasional dan badan ekstra internasional lainnya",
-        "lain-lain", "bisnis/wirausaha", "kartap", "magang", "tenaga kerja migran", "[]" // Pastikan '[]' juga ditangani
+        "lain-lain", "bisnis/wirausaha", "kartap", "magang", "tenaga kerja migran"
     ]}
     ];
 

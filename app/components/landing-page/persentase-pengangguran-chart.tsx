@@ -5,15 +5,16 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recha
 import { BookOpen } from 'lucide-react';
 
 const raw = [
-  { Uraian: "SD ke Bawah", Laki: 30.34, Perempuan: 19.31, Total: 26.76 },
-  { Uraian: "SMP", Laki: 8.47, Perempuan: 11.77, Total: 9.54 },
-  { Uraian: "SMA Umum", Laki: 21.07, Perempuan: 26.03, Total: 22.68 },
-  { Uraian: "SMK Kejuruan", Laki: 31.41, Perempuan: 35.38, Total: 32.70 },
-  { Uraian: "DI/II/III/Universitas", Laki: 8.72, Perempuan: 7.50, Total: 8.32 },
+  { Uraian: "SD ke Bawah", Laki: 30.34, Perempuan: 19.31, Total: 7.86 },
+  { Uraian: "SMP", Laki: 8.47, Perempuan: 11.77, Total: 17.02 },
+  { Uraian: "SMA Umum", Laki: 21.07, Perempuan: 26.03, Total: 15.88 },
+  { Uraian: "SMA Kejuruan", Laki: 31.41, Perempuan: 35.38, Total: 33.98 },
+  { Uraian: "DI/II/III", Laki: 8.72, Perempuan: 7.50, Total: 3.67 },
+  { Uraian: "Universitas", Laki: 8.72, Perempuan: 7.50, Total: 21.60 },
   { Uraian: "Jumlah", Laki: 100, Perempuan: 100, Total: 100 }
 ];
 
-const COLORS = ['#6366F1', '#EC4899', '#3B82F6', '#10B981', '#F59E0B'];
+const COLORS = ['#FFD700', '#87CEEB', '#4682B4', '#3CB371', '#8A2BE2', '#483D8B'];
 const chartData = raw.filter(i => i.Uraian !== "Jumlah").map(i => ({ name: i.Uraian, value: i.Total }));
 
 const PersentasePengangguranChart: React.FC = () => {
@@ -77,14 +78,17 @@ const PersentasePengangguranChart: React.FC = () => {
               <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
             </div>
             <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 leading-tight">
-              Tingkat Pendidikan Pengangguran
+              Persentase Pengangguran Menurut Tingkat Pendidikan
             </h3>
           </div>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
-            Mayoritas pengangguran di Kota Tasikmalaya berasal dari <strong>lulusan SMK Kejuruan (32,7%)</strong>, diikuti <strong>SD ke bawah (26,8%)</strong> dan <strong>SMA Umum (22,7%)</strong>. Ini menunjukkan bahwa jenjang pendidikan tertentu berkontribusi besar pada angka pengangguran.
+            Mayoritas pengangguran di Kota Tasikmalaya berasal dari <strong>lulusan SMA Kejuruan (34%)</strong>, diikuti <strong>Universitas (21,60)</strong> dan <strong>SMP (17%)</strong>. Ini menunjukkan bahwa jenjang pendidikan tertentu berkontribusi besar pada angka pengangguran.
           </p>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed">
             Visualisasi ini menjadi <strong>titik awal strategis</strong> untuk menyelaraskan <strong>kurikulum, pelatihan, dan kebijakan keterampilan</strong> dengan kebutuhan industri lokal, agar lulusan lebih mudah terserap pasar kerja.
+          </p>
+          <p className='text-sm mt-2'>
+          Sumber: BPS Kota Tasikmalaya Sakernas 2024
           </p>
         </div>
       </div>

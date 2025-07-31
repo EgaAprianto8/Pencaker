@@ -64,14 +64,17 @@ const PencakerPenempatanChart: React.FC = () => {
               <Briefcase className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
             </div>
             <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 leading-tight">
-              Dinamika Pasar Kerja Tasikmalaya
+              Dinamika Pasar Tenaga Kerja Tasikmalaya
             </h3>
           </div>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
             Jumlah pencari kerja terus menurun: dari <strong>4.796 orang (2021)</strong> menjadi <strong>2.619 orang (2024)</strong>. Namun, penempatan kerja tidak konsisten—hanya sebagian pelamar yang berhasil ditempatkan, bahkan saat jumlah pelamar menurun.
           </p>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed">
-            Ini mengindikasikan adanya kesenjangan antara <strong>suplai dan permintaan tenaga kerja</strong>. Dengan memahami tren ini, pemangku kepentingan dapat menentukan waktu atau strategi terbaik untuk meningkatkan peluang kerja di Kota Tasikmalaya.
+            Ini mengindikasikan adanya kesenjangan antara <strong>penawaran dan permintaan tenaga kerja</strong>. Dengan memahami tren ini, pemangku kepentingan dapat menentukan waktu atau strategi terbaik untuk meningkatkan peluang kerja di Kota Tasikmalaya.
+          </p>
+          <p className='text-sm mt-2'>
+            Sumber: Dinas Ketenagakerjaan Kota Tasikmalaya
           </p>
         </div>
       </div>

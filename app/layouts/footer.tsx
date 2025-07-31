@@ -37,7 +37,7 @@ const FooterWeb = () => {
         {/* Bagian Copyright - Disatukan di bawah deskripsi */}
         <div className="mt-8 pt-6 border-t border-gray-600 w-full max-w-xl"> {/* Garis pembatas yang lebih rapi */}
           <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} TasikKerja. Semua Hak Dilindungi.
+            &copy; {new Date().getFullYear()} TasikKerja. <em>All Rights Reserved.</em>
           </p>
         </div>
       </div>
