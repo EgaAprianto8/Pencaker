@@ -64,7 +64,7 @@ const PencakerPenempatanChart: React.FC = () => {
               <Briefcase className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
             </div>
             <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 leading-tight">
-              Dinamika Pasar Tenaga Kerja Tasikmalaya
+              Dinamika Pasar Tenaga Kerja Kota Tasikmalaya
             </h3>
           </div>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
