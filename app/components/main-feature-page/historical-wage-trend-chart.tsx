@@ -60,15 +60,16 @@ const colors = [
   '#FF4500', '#DA70D6', '#20B2AA', '#7B68EE', '#BDB76B', '#FFD700', '#ADFF2F', '#F08080'
 ];
 
-const CustomXAxisTick = ({ x,y,payload }:any) => {
-  const [m,y2] = payload.value.split(' ');
+const CustomXAxisTick = ({ x, y, payload }: any) => {
+  const [m, yShort] = payload.value.split(' ');
   return (
     <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={16} textAnchor="middle" fontSize={9} fill="#666">{m}</text>
-      {m==='Jan' && (
-        <text x={0} y={0} dy={30} textAnchor="middle"
-          fontSize={12} fontWeight="bold" fill="#333">
-          {`20${y2}`}
+      <text x={0} y={0} dy={14} textAnchor="middle" fontSize={9} fill="#666">
+        {m}
+      </text>
+      {m === 'Jan' && (
+        <text x={0} y={0} dy={28} textAnchor="middle" fontSize={10} fontWeight="bold" fill="#333">
+          20{yShort}
         </text>
       )}
     </g>
@@ -144,7 +145,7 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
     const histStartYear = historical.length > 0 ? getYear(parseISO(allMonths[0]+'-01')) : 0;
     const histEndYear = historical.length > 0 ? getYear(parseISO(allMonths[historical.length - 1]+'-01')) : 0;
 
-    // 4) Forecast: **Dynamic Sliding‐Window Linear Regression**
+    // 4) Forecast: Dynamic Sliding‐Window Linear Regression
     const forecast:any[] = [];
     popMap.forEach((_, jrRaw) => {
       const jab = capitalizeWords(jrRaw);
@@ -221,8 +222,8 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
   }
 
   // Mendapatkan rentang bulan untuk zona prediksi
-  const predictionZoneStartMonth = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 12]?.name : '';
-  const predictionZoneEndMonth = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 1]?.name : '';
+  const predictionZoneStartMonthYear = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 12]?.name : '';
+  const predictionZoneEndMonthYear = aggregatedTrendData.length > 0 ? aggregatedTrendData[aggregatedTrendData.length - 1]?.name : '';
 
 
   return (
@@ -256,103 +257,167 @@ const HistoricalJobDemandChart: React.FC<HistoricalJobDemandChartProps> = ({
           );
         })}
       </div>
-      {aggregatedTrendData.length>0 ? (
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={aggregatedTrendData} margin={{top:10, right:30, left:20, bottom:5}}>
-            {/* ReferenceArea untuk setiap tahun historis */}
-            {[...Array(historicalEndYear - historicalStartYear + 1)].map((_, i) => {
-              const year = historicalStartYear + i;
-              const firstMonthOfYear = aggregatedTrendData.find(item => item.name.endsWith(`${year % 100}`));
-              const lastMonthOfYear = aggregatedTrendData.slice().reverse().find(item => item.name.endsWith(`${year % 100}`));
+      {aggregatedTrendData.length > 0 ? (
+  <>
+    <ResponsiveContainer width="100%" height={400}>
+      <LineChart data={aggregatedTrendData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+        {/* ReferenceArea untuk setiap tahun historis */}
+        {[...Array(historicalEndYear - historicalStartYear + 1)].map((_, i) => {
+          const year = historicalStartYear + i;
+          const firstMonthOfYear = aggregatedTrendData.find(item => item.name.endsWith(`${year % 100}`));
+          const lastMonthOfYear = aggregatedTrendData.slice().reverse().find(item => item.name.endsWith(`${year % 100}`));
 
-              if (!firstMonthOfYear || !lastMonthOfYear) return null;
+          if (!firstMonthOfYear || !lastMonthOfYear) return null;
 
-              // Pastikan rentang area tidak tumpang tindih dengan zona prediksi
-              const x2Value = year === historicalEndYear ? format(parseISO(endDateProp || '2025-06-30'), 'MMM yy') : lastMonthOfYear.name;
+          const x2Value = year === historicalEndYear ? format(parseISO(endDateProp || '2025-06-30'), 'MMM yy') : lastMonthOfYear.name;
 
-              return (
-                <ReferenceArea
-                  key={`year-area-${year}`}
-                  x1={firstMonthOfYear.name}
-                  x2={x2Value}
-                  y1={0}
-                  fill={yearColors.get(year)}
-                  fillOpacity={0.3}
-                  label={{
-                    value: `${year}`,
-                    position: "insideTopLeft",
-                    fill: "#333", // Warna teks lebih netral
-                    fontSize: 12,
-                    fontWeight: "bold"
-                  }}
-                />
-              );
-            })}
-
-            {/* Zona Prediksi */}
-            {predictionZoneStartMonth && predictionZoneEndMonth && (
-              <ReferenceArea
-                x1={predictionZoneStartMonth}
-                x2={predictionZoneEndMonth}
-                y1={0}
-                fill="#fef3c7" // Tetap kuning untuk zona prediksi
-                fillOpacity={0.4}
-                label={{value:"Zona Prediksi",position:"insideTopLeft",
-                  fill:"#f59e0b",fontSize:12,fontWeight:"bold"}}
-              />
-            )}
-
-            <CartesianGrid strokeDasharray="3 3"/>
-            <XAxis dataKey="name" tick={CustomXAxisTick} interval="preserveStartEnd" height={60}/>
-            <YAxis tickFormatter={formatP} label={{value:'Jumlah Peminat',angle:-90,position:'insideLeft'}}/>
-            <Tooltip
-              formatter={(v,k)=>[`${formatP(v)} Peminat`,k]}
-              labelFormatter={l=>`Periode: ${l}`}
+          return (
+            <ReferenceArea
+              key={`year-area-${year}`}
+              x1={firstMonthOfYear.name}
+              x2={x2Value}
+              y1={0}
+              fill={yearColors.get(year)}
+              fillOpacity={0.3}
+              label={{
+                value: `${year}`,
+                position: "insideTopLeft",
+                fill: "#333",
+                fontSize: 12,
+                fontWeight: "bold"
+              }}
             />
-            {selectedJabatan.map(jab=>{
-              const idx = allJabatanOptions.indexOf(jab.toLowerCase());
-              const clr = colors[idx%colors.length];
-              // Hapus fungsi isPred karena tidak lagi diperlukan untuk strokeDasharray
-              // const isPred = (name:string) => {
-              //   const parts = name.split(' ');
-              //   if (parts.length === 2) {
-              //     const year = parseInt(parts[1], 10);
-              //     const month = parts[0];
-              //     if (year === 25 && (month === 'Jul' || month === 'Aug' || month === 'Sep' || month === 'Oct' || month === 'Nov' || month === 'Dec')) {
-              //       return true;
-              //     }
-              //     if (year === 26) {
-              //       return true;
-              //     }
-              //   }
-              //   return false;
-              // };
+          );
+        })}
 
-              return (
-                <Line
-                  key={jab}
-                  type="monotone"
-                  dataKey={jab}
-                  stroke={clr}
-                  strokeWidth={2}
-                  // Hapus properti strokeDasharray
-                  // strokeDasharray={
-                  //   (aggregatedTrendData.some(dataPoint => isPred(dataPoint.name) && dataPoint[jab] !== null)) ? '5 5' : undefined
-                  // }
-                  dot={false}
-                  activeDot={{r:6}}
-                  connectNulls
-                  name={jab}
-                />
-              );
-            })}
-          </LineChart>
-        </ResponsiveContainer>
-      ) : (
-        <div className="h-64 flex items-center justify-center text-gray-500">
-          Tidak ada data tren untuk pilihan ini.
+        {/* Zona Prediksi */}
+        {predictionZoneStartMonthYear && predictionZoneEndMonthYear && (
+          <ReferenceArea
+            x1={predictionZoneStartMonthYear}
+            x2={predictionZoneEndMonthYear}
+            y1={0}
+            fill="#fef3c7"
+            fillOpacity={0.4}
+            label={{
+              value: "Zona Prediksi",
+              position: "insideTopLeft",
+              fill: "#f59e0b",
+              fontSize: 12,
+              fontWeight: "bold"
+            }}
+          />
+        )}
+
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          dataKey="name"
+          tick={CustomXAxisTick}
+          interval={0}
+          height={60}
+        />
+        <YAxis tickFormatter={formatP} label={{ value: 'Jumlah Peminat', angle: -90, position: 'insideLeft' }} />
+        <Tooltip
+          formatter={(v, k) => [`${formatP(v)} Peminat`, k]}
+          labelFormatter={l => `Periode: ${l}`}
+        />
+        {selectedJabatan.map(jab => {
+          const idx = allJabatanOptions.indexOf(jab.toLowerCase());
+          const clr = colors[idx % colors.length];
+
+          return (
+            <Line
+              key={jab}
+              type="monotone"
+              dataKey={jab}
+              stroke={clr}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 6 }}
+              connectNulls
+              name={jab}
+            />
+          );
+        })}
+      </LineChart>
+    </ResponsiveContainer>
+
+{/* ---------- INSIGHT CARD ---------- */}
+{selectedJabatan.length > 0 && (() => {
+    const forecastSlice = aggregatedTrendData.slice(-12);
+    const [startForecastLabel, endForecastLabel] = [forecastSlice[0]?.name, forecastSlice[11]?.name];
+
+    // Ambil jabatan dengan total forecast tertinggi
+    const topJob = selectedJabatan.reduce((top, jab) => {
+        const total = forecastSlice.reduce((sum, row) => sum + (row[jab] || 0), 0);
+        return total > (top?.total || 0) ? { name: jab, total } : top;
+    }, null as { name: string; total: number } | null);
+
+    if (!topJob) return null;
+
+    // Tampilkan hanya insight untuk jabatan terbaik
+    const jabValues = forecastSlice.map(row => row[topJob.name] || 0);
+    const forecastMonths = forecastSlice.map(row => row.name);
+
+    const getTopJobInsight = () => {
+        const total = topJob.total;
+        const maxVal = Math.max(...jabValues);
+        const peakMonth = forecastMonths[jabValues.indexOf(maxVal)];
+
+        return (
+<div className="mt-8 p-8 bg-gradient-to-br from-emerald-500/10 via-white to-emerald-100/30 rounded-2xl backdrop-blur-sm">
+  <div className="flex items-start gap-4">
+    <div className="flex-shrink-0">
+      <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+        <span className="text-white text-xl">🎯</span>
+      </div>
+    </div>
+    
+    <div className="flex-1">
+      <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent mb-3">
+        Sorotan Karier Masa Depan
+      </h3>
+      
+      <p className="text-gray-700 leading-relaxed mb-6">
+        Di tengah pesatnya transformasi dunia kerja, <span className="font-bold text-emerald-700 px-2 py-1 bg-emerald-100 rounded-lg">{topJob.name}</span> 
+        muncul sebagai bintang baru yang bersinar terang. Dari awal {startForecastLabel} hingga akhir {endForecastLabel}, 
+        jabatan ini diprediksi akan menjadi magnet bagi talenta-talenta berbakat dengan kebutuhan yang terus meningkat.
+      </p>
+
+        <div className="grid md:grid-cols-3 gap-4 text-sm ">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+            <div className="text-blue-600 font-medium mb-1">Total Peluang</div>
+            <div className="text-2xl font-bold text-blue-800">{formatP(topJob.total)}</div>
+            <div className="text-xs text-blue-600 mt-1">pekerja baru dalam 12 bulan</div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+            <div className="text-green-600 font-medium mb-1">Lonjakan Tertinggi</div>
+            <div className="text-2xl font-bold text-green-800">{formatP(maxVal)}</div>
+            <div className="text-xs text-green-600 mt-1">di {peakMonth}</div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+            <div className="text-purple-600 font-medium mb-1">Strategi Terbaik</div>
+            <div className="text-xs text-purple-700 leading-relaxed">
+              Persiapkan skill & portfolio sebelum {peakMonth}. Gunakan momentum ini untuk melamar posisi impian Anda!
+            </div>
+          </div>
         </div>
-      )}
+    </div>
+  </div>
+</div>
+        );
+    };
+
+    return getTopJobInsight();
+})()}
+{/* ---------- END INSIGHT CARD ---------- */}
+  </>
+) : (
+  <div className="h-64 flex items-center justify-center text-gray-500">
+    Tidak ada data tren untuk pilihan ini.
+  </div>
+)}
     </div>
   );
 };

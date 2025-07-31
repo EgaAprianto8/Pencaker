@@ -374,7 +374,7 @@ const JobVisualization = ({
                         <p className="text-xl font-semibold text-gray-800">
                             {totalPeminatSektorForOtherEdu.toLocaleString('id-ID')}
                         </p>
-                        <p className="text-xs text-gray-800">Lulusan Lain • {percentageByWageForOtherEdu.toFixed(1)}%</p>
+                        <p className="text-xs text-gray-800">Lulusan Lain </p>
                         </div>
                     )}
                     </div>
