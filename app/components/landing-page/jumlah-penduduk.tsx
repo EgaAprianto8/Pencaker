@@ -255,7 +255,7 @@ const KetenagakerjaanViz: React.FC = () => {
                     <ReferenceLine yAxisId="left" y={totalSeriesEnhanced[0].nilai} stroke="#cbd5e1" strokeDasharray="4 4" />
 
                     {/* Batang YoY % (kanan) */}
-                    <Bar yAxisId="right" dataKey="yoyPct" name="Perubahan YoY (%)" fill="#a78bfa" radius={[6, 6, 0, 0]}>
+                    <Bar yAxisId="right" dataKey="yoyPct" name="Perubahan Per Tahun (%)" fill="#a78bfa" radius={[6, 6, 0, 0]}>
                       <LabelList
                         dataKey="yoyPct"
                         position="top"
