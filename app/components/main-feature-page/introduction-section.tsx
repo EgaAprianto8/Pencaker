@@ -50,7 +50,7 @@ const IntroductionSection: React.FC = () => {
           quality={90}
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0145a1]/80 to-[#003377]/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0145a1]/50 to-[#003377]/50" />
       </div>
 
       {/* Konten tetap di depan */}

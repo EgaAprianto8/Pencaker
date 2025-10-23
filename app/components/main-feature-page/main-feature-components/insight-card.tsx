@@ -23,6 +23,10 @@ export const InsightCard = ({ icon, label, value, subtext, colorClass = 'from-bl
       <span className="text-sm font-medium opacity-90">{label}</span>
     </div>
     <p className="text-2xl font-bold">{value}</p>
-    {subtext && <p className="text-xs opacity-75">{subtext}</p>}
+    {subtext && <p className={`text-sm font-medium text-white px-2 py-0.5 rounded-md inline-block ${
+    label === "Paling Diminati"
+      ? "bg-black/30"
+      : "bg-white/20"
+  }`}>{subtext}</p>}
   </motion.div>
 );

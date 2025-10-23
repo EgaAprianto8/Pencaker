@@ -1302,24 +1302,16 @@ const MainFeature = () => {
                                         label="Paling Diminati"
                                         value={`"${insight.highestDemandJob?.jabatan}"`}
                                         subtext={`${insight.highestDemandJob?.peminat.toLocaleString('id-ID')} peminat`}
-                                        colorClass="from-blue-600 to-blue-800"
+                                        colorClass="from-orange-500 to-red-600"
                                         />
                                         <InsightCard
                                         icon={<Zap className="w-4 h-4" />}
                                         label="Peluang Tersembunyi"
                                         value={`"${insight.lowestDemandJob?.jabatan}"`}
                                         subtext={`${insight.lowestDemandJob?.peminat.toLocaleString('id-ID')} peminat`}
-                                        colorClass="from-slate-500 to-slate-700"
+                                        colorClass="from-indigo-500 to-purple-700"
                                         />
-                                        {insight.lowDemandHighWageJob && (
-                                        <InsightCard
-                                            icon={<DollarSign className="w-4 h-4" />}
-                                            label="Potensi Gaji Tinggi"
-                                            value={`"${insight.lowDemandHighWageJob.jabatan}"`}
-                                            subtext={`${insight.lowDemandHighWageJob.wageCategories} • ${insight.lowDemandHighWageJob.peminat.toLocaleString('id-ID')} peminat`}
-                                            colorClass="from-emerald-500 to-emerald-700"
-                                        />
-                                        )}
+
                                     </div>
                                     ) : (
                                     <p className="text-sm text-gray-500 text-center py-6">Data tidak cukup untuk menghasilkan insight.</p>
