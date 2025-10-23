@@ -303,30 +303,21 @@ const KetenagakerjaanViz: React.FC = () => {
           </p>
         </div>
 
-        {/* ================== NARASI (SELALU ADA) ================== */}
-        <div className="w-full lg:w-2/5 p-4 text-center lg:text-left">
+        {/* Narrative Section */}
+        <div className="w-full lg:w-2/5 p-4 text-center lg:text-left lg:order-1 order-1">
           <div className="flex flex-col items-center lg:items-start mb-6">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-lg mb-4">
-              <TrendingUp className="w-8 h-8 text-indigo-600" />
+            <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-200 shadow-lg mb-4">
+              <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 text-indigo-600" />
             </div>
-            <h3 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-tight">
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 leading-tight">
               Tren Demografi Ketenagakerjaan
             </h3>
           </div>
-
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
-            Angkatan kerja di Kota Tasikmalaya terus tumbuh, dari <strong>±342 ribu (2021)</strong> menjadi
-            <strong> ±395 ribu (2024)</strong>. Jumlah yang bekerja ikut meningkat, sementara tingkat pengangguran terbuka
-            berfluktuasi setiap tahun.
-          </p>
-          <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed mb-4">
-            Kelompok <strong>bukan angkatan kerja</strong>—pelajar, pengurus rumah tangga, dan lainnya—masih menjadi bagian
-            besar dari populasi usia kerja. Gunakan tab <em>Ikhtisar</em> untuk perbandingan antar-tahun per kategori,
-            <em> Per Kategori</em> untuk tren spesifik tiap kategori (swipe carousel di mobile), dan <em>Jumlah</em> untuk total
-            dengan rentang sumbu yang dipersempit serta persentase perubahan tahun-ke-tahun.
+            Angkatan kerja di Kota Tasikmalaya terus tumbuh, dari <strong>±342 ribu (2021)</strong> menjadi <strong>±395 ribu (2024)</strong>. Jumlah yang bekerja ikut meningkat, sementara tingkat pengangguran terbuka berfluktuasi setiap tahunnya.
           </p>
           <p className="text-gray-700 text-base sm:text-lg text-justify leading-relaxed">
-            Desain ini menjaga keterbacaan angka, konsistensi warna per tahun, dan menghindari dominasi skala dari “Jumlah”.
+            Kelompok <strong>bukan angkatan kerja</strong>—pelajar, pengurus rumah tangga, lainnya—masih menjadi bagian besar dari populasi usia kerja. Data ini menjadi dasar penting untuk memahami dinamika pasar kerja dan merancang kebijakan ketenagakerjaan yang lebih tepat sasaran.
           </p>
         </div>
       </div>
